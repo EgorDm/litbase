@@ -21,7 +21,7 @@ function(select_source_files)
 endfunction()
 
 function(init_library library_name link_libraries)
-    message(Status adding library: ${library_name})
+    message("Adding library: ${library_name}")
     add_library(${library_name} ${SOURCE_FILES})
 
     target_link_libraries(
