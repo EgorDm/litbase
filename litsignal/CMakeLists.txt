@@ -11,6 +11,7 @@ find_package(Armadillo REQUIRED)
 include_directories(${litaudio_INCLUDE_DIRS})
 include_directories(${ARMADILLO_INCLUDE_DIR})
 include_directories(${FFTW_INCLUDE_DIRS})
+include_directories(${SIGPACK_INCLUDE_DIR})
 
 set(USED_LIBRARIES
         litaudio

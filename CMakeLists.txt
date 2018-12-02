@@ -8,6 +8,9 @@ include(Utils.cmake)
 
 init_debug()
 
+set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs")
+set(SIGPACK_INCLUDE_DIR "${LIB_DIR}/sigpack")
+
 add_subdirectory(litcore)
 add_subdirectory(litaudio)
 add_subdirectory(litaudiofile)

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "math.h"
 
-using namespace litcore::utils;
+using namespace lit;
 
 float math::clip(float n, float lower, float upper) {
     return std::max(lower, std::min(n, upper));

@@ -1,0 +1,3 @@
+[submodule "libs/sigpack"]
+	path = libs/sigpack
+	url = git@github.com:EgorDm/sigpack-fork.git
