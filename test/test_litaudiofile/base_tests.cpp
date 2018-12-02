@@ -24,7 +24,7 @@ TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
     auto converter = processing::AudioConverter(src, dst);
     ASSERT_TRUE(converter.convert());
 
-    auto writer = AudioWriter(dst, "data_out/dst.mp3");
+    auto writer = AudioWriter(dst, "data/output/dst.mp3");
     ASSERT_TRUE(writer.write());
 
 }

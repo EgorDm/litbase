@@ -99,9 +99,8 @@ dkms.conf
 cmake-*
 
 data
-!data/.gitkeep
 data_out
-!data_out/.gitkeep
+!*/*.gitkeep
 
 *.mp3
 *.wav
