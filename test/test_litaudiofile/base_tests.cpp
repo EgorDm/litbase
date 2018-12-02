@@ -4,14 +4,29 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <audiofile/writing.h>
+#include <audiofile/reading.h>
 
-class BaseTests : public ::testing::Test {
+using namespace litaudiofile;
+using namespace litaudio::structures;
+
+class LitAudioFileBaseTests : public ::testing::Test {
 
 };
 
-TEST_F(BaseTests, BaseTests_HelloWorld_Test) {
-    std::cout << "Hello, World!" << std::endl;
-    ASSERT_EQ(1, 1);
+TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
+    auto src = new AudioContainer<uint16_t>(AV_SAMPLE_FMT_S16);
+    auto reader = AudioReader<uint16_t>(src, "data/hangar.mp3");
+    ASSERT_TRUE(reader.read());
+
+    auto dst = src->clone<uint16_t>();
+    dst->sample_rate = src->sample_rate / 2;
+    auto converter = processing::AudioConverter(src, dst);
+    ASSERT_TRUE(converter.convert());
+
+    auto writer = AudioWriter(dst, "data_out/dst.mp3");
+    ASSERT_TRUE(writer.write());
+
 }
 
 int main(int argc, char** argv) {

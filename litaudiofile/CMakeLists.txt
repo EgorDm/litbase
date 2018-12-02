@@ -11,4 +11,4 @@ set(USED_LIBRARIES
         ${FFMPEG_LIBRARIES}
         litcore)
 
-init_library(${PROJECT_NAME} ${USED_LIBRARIES})
+init_library(${PROJECT_NAME} "${USED_LIBRARIES}")

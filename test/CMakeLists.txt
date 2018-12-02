@@ -21,8 +21,7 @@ function(init_test_project DEPENDENCIES)
     target_link_libraries(${PROJECT_NAME}
             gtest
             gmock
-            ${DEPENDENCY_LIST}
-            )
+            ${DEPENDENCY_LIST})
 
     add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
 endfunction()

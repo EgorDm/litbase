@@ -1,3 +1,3 @@
-set(TEST_DEPENDENCIES "litaudiofile")
+set(TEST_DEPENDENCIES litaudiofile)
 
-init_test_project(${TEST_DEPENDENCIES})
+init_test_project("${TEST_DEPENDENCIES}")
