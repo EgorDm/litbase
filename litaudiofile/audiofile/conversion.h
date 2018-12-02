@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <utils/debug.h>
-#include "../audio/structures/audio_container_interface.h"
+#include <structures/audio_container.h>
 
 extern "C" {
 #include <libavutil/samplefmt.h>

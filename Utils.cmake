@@ -1,4 +1,4 @@
-function(defineLibIncludes)
+function(define_lib_includes)
     get_property(tmp_include_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
     set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR} ${tmp_include_dirs}
             CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)
@@ -29,5 +29,5 @@ function(init_library library_name link_libraries)
             ${link_libraries}
     )
 
-    defineLibIncludes()
+    define_lib_includes()
 endfunction()

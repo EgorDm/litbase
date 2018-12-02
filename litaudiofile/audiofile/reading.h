@@ -10,7 +10,6 @@
 #include <utils/debug.h>
 #include "ffmpeg_utils.h"
 #include "conversion.h"
-#include "../audio/structures/audio_container.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>

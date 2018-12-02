@@ -5,7 +5,6 @@
 
 #include "writing.h"
 #include "conversion.h"
-#include "../audio/structures/audio_container.h"
 
 using namespace litcore::utils;
 using namespace litaudiofile;

@@ -10,7 +10,7 @@ using namespace litaudiofile;
 using namespace litaudio;
 
 template<typename O>
-bool AudioReader<O>::read() {
+bool litaudiofile::AudioReader<O>::read() {
     if(!open_file()) return false;
 
     if(!read_file()) return false;

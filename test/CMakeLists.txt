@@ -1,6 +1,5 @@
 find_package(GTest REQUIRED)
 find_package(GMock REQUIRED)
-# include_directories(${GMOCK_INCLUDE_DIRS})
 
 function(init_test_project DEPENDENCIES)
     string(REPLACE "/" ";" CUR_DIRECTORY_TOKENS ${CMAKE_CURRENT_LIST_DIR})
@@ -13,15 +12,14 @@ function(init_test_project DEPENDENCIES)
 
     add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-    string(REPLACE " " ";" DEPENDENCY_LIST ${DEPENDENCIES})
-    FOREACH(DEPENDENCY ${DEPENDENCY_LIST})
+    FOREACH(DEPENDENCY ${DEPENDENCIES})
         include_directories(${${DEPENDENCY}_INCLUDE_DIRS})
     ENDFOREACH(DEPENDENCY)
 
     target_link_libraries(${PROJECT_NAME}
             gtest
             gmock
-            ${DEPENDENCY_LIST})
+            ${DEPENDENCIES})
 
     add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
 endfunction()

@@ -6,8 +6,8 @@
 
 #include <string>
 #include <libavutil/samplefmt.h>
+#include <structures/pcm_container.h>
 #include "reading.h"
-#include "../audio/structures/pcm_container.h"
 
 #define LitAudioSimplified_TAG "LitAudio Simplified"
 

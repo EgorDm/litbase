@@ -6,8 +6,8 @@
 
 #include <string>
 #include <utils/debug.h>
+#include <structures/audio_container_interface.h>
 #include "ffmpeg_utils.h"
-#include "../audio/structures/audio_container_interface.h"
 
 extern "C" {
 #include <libavcodec/avcodec.h>

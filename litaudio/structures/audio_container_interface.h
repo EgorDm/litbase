@@ -4,7 +4,9 @@
 
 #pragma once
 
+extern "C" {
 #include <libavutil/samplefmt.h>
+}
 
 namespace litaudio { namespace structures {
     class AudioContainerInterface {
@@ -22,7 +24,7 @@ namespace litaudio { namespace structures {
         AudioContainerInterface(AVSampleFormat format, int sample_rate, int channels)
                 : format(format), sample_rate(sample_rate), channels(channels) {}
 
-        virtual ~AudioContainerInterface() {}
+        virtual ~AudioContainerInterface() = default;
 
         inline int sample_byte_size() const {
             return av_get_bytes_per_sample(format);
@@ -41,9 +43,9 @@ namespace litaudio { namespace structures {
         virtual void set_sample_count(int sample_count) = 0;
 
         virtual void copy_unfilled_format(const AudioContainerInterface *src) {
-            if(format == AV_SAMPLE_FMT_NONE) format = src->format;
-            if(sample_rate < 0) sample_rate = src->sample_rate;
-            if(channels < 0) channels = src->channels;
+            if (format == AV_SAMPLE_FMT_NONE) format = src->format;
+            if (sample_rate < 0) sample_rate = src->sample_rate;
+            if (channels < 0) channels = src->channels;
         }
     };
 }}
