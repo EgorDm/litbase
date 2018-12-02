@@ -10,3 +10,4 @@ init_debug()
 
 add_subdirectory(litcore)
 add_subdirectory(litaudiofile)
+add_subdirectory(test)
