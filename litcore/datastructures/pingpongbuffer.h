@@ -2,8 +2,7 @@
 // Created by egordm on 1-12-18.
 //
 
-#ifndef LITCORE_PINGPONGBUFFER_H
-#define LITCORE_PINGPONGBUFFER_H
+#pragma once
 
 #include <utility>
 #include "ibuffer.h"
@@ -66,5 +65,3 @@ namespace litcore { namespace datastructures {
         }
     };
 }}
-
-#endif //LITCORE_PINGPONGBUFFER_HPP

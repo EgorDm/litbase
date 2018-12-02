@@ -2,8 +2,7 @@
 // Created by egordm on 1-12-18.
 //
 
-#ifndef LITCORE_IBUFFER_H
-#define LITCORE_IBUFFER_H
+#pragma once
 
 #include <cstddef>
 
@@ -28,5 +27,3 @@ namespace litcore { namespace datastructures {
         virtual void reset() {};
     };
 }}
-
-#endif //LITBASE_IBUFFER_H

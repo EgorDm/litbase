@@ -2,8 +2,7 @@
 // Created by egordm on 1-12-18.
 //
 
-#ifndef LITCORE_BUFFER_H
-#define LITCORE_BUFFER_H
+#pragma once
 
 #include "ibuffer.h"
 #include <memory>
@@ -47,5 +46,3 @@ namespace litcore { namespace datastructures {
         }
     };
 }}
-
-#endif //LITCORE_BUFFER_H
