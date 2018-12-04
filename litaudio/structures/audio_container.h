@@ -5,6 +5,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include "typed_audio_container_interface.h"
 
 extern "C" {
@@ -14,39 +15,56 @@ extern "C" {
 namespace litaudio { namespace structures {
     template<typename T>
     class AudioContainer : public TypedAudioContainerInterface<T> {
+    public:
+        using DataContainer = std::vector<std::vector<T>>;
     private:
         using parent_type = TypedAudioContainerInterface<T>;
 
+        DataContainer data;
+        int sample_count = 0;
+
     public:
-        std::vector<T> data;
-        int sample_count;
+        explicit AudioContainer(AVSampleFormat format = AV_SAMPLE_FMT_NONE, int channels = -1, int sample_rate = -1)
+                : TypedAudioContainerInterface<T>(format, channels, sample_rate) {
+            resetData();
+        }
 
-        AudioContainer() : sample_count(0) {}
-
-        explicit AudioContainer(const AVSampleFormat &format)
-                : sample_count(0), TypedAudioContainerInterface<T>(format) {}
-
-        AudioContainer(AVSampleFormat format, std::vector<T> data, int sample_count, int sample_rate, int channels)
-                : TypedAudioContainerInterface<T>(format, sample_rate, channels), data(std::move(data)),
+        AudioContainer(AVSampleFormat format, const DataContainer &data, int sample_count, int sample_rate, int channels)
+                : TypedAudioContainerInterface<T>(format, channels, sample_rate),
+                  data(data),
                   sample_count(sample_count) {}
 
-        inline const T *get_data() const override {
-            return &data[0];
+        inline void resetData() {
+            if(parent_type::getChannelCount() <= 0) return;
+            data.clear();
+            data.resize(parent_type::getChannelDimCount());
         }
 
-        inline const uint8_t *get_char_data() const override {
-            return reinterpret_cast<const uint8_t *>(&data[0]);
+        std::vector<T> &getDataContainer(int channel = 0) {
+            return data[channel];
         }
 
-        int get_sample_count() const override {
+        const T *getData(int channel) const override {
+            return data[channel].data();
+        }
+
+        const uint8_t *getByteData(int channel) const override {
+            return reinterpret_cast<const uint8_t *>(getData(channel));
+        }
+
+        int getSampleCount() const override {
             return sample_count;
         }
 
-        void set_sample_count(int sample_count) override {
+        void setSampleCount(int sample_count) override {
+            // Resize arrays accordingly
             if (this->sample_count < sample_count) {
+                int data_per_sample = parent_type::getSampleByteSize() / sizeof(T);
+                if(!parent_type::isPlanar()) data_per_sample *= parent_type::getChannelCount();
 
-                int data_per_sample = parent_type::sample_byte_size() / sizeof(T);
-                this->data.resize(static_cast<unsigned long long int>(sample_count * parent_type::channels * data_per_sample));
+                for (int i = 0; i < parent_type::getChannelDimCount(); ++i) {
+                    data[i].resize(static_cast<unsigned long>(sample_count * data_per_sample));
+                }
             }
             this->sample_count = sample_count;
         }
@@ -54,7 +72,8 @@ namespace litaudio { namespace structures {
         template<typename O>
         inline AudioContainer<O> *clone() const {
             auto ret = new AudioContainer<O>(parent_type::format);
-            ret->copy_unfilled_format(this);
+            ret->copyUnfilledFormat(this);
+            ret->resetData();
             return ret;
         }
     };

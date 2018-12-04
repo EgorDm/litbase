@@ -10,7 +10,7 @@ using namespace litcore::utils;
 using namespace litaudiofile;
 
 bool AudioWriter::write() {
-    if(!open_file()) return false;
+    if (!open_file()) return false;
 
     return write_file();
 }
@@ -37,7 +37,7 @@ bool AudioWriter::write_file() {
     max_frame_size = codec_context->frame_size == 0 ? AV_CODEC_CAP_VARIABLE_FRAME_SIZE : codec_context->frame_size;
     sample_byte_size = av_get_bytes_per_sample(codec_context->sample_fmt);
 
-    if(writing_planar) { // Planar strategy is to copy everything into a temp buffer
+    if (writing_planar) { // Planar strategy is to copy everything into a temp buffer
         frame->nb_samples = max_frame_size;
 
         /* Allocate the samples of the created frame. This call will make
@@ -49,15 +49,13 @@ bool AudioWriter::write_file() {
     }
 
     // Write frames
-    data_cursor = tmp->get_char_data();
-
     bool finished = false;
     bool success = false;
-    while(sample_cursor < tmp->get_sample_count() && !finished) {
+    while (sample_cursor < tmp->getSampleCount() && !finished) {
         success = write_frame(finished, frame);
         av_packet_unref(&packet);
 
-        if(!success) return false;
+        if (!success) return false;
     }
 
     // Flush
@@ -79,21 +77,20 @@ bool AudioWriter::write_file() {
 
 bool AudioWriter::pick_sample_format() {
     // try to pick a compatible format
-    if(ffmpeg_utils::supports_sample_fmt(codec, src->format)) {
-        codec_context->sample_fmt = src->format;
-        tmp = src;
-    } else if(ffmpeg_utils::supports_sample_fmt(codec, av_get_planar_sample_fmt(src->format))) {
-        codec_context->sample_fmt = av_get_planar_sample_fmt(src->format);
+    if (ffmpeg_utils::supports_sample_fmt(codec, src->getFormat())) {
+        // || ffmpeg_utils::supports_sample_fmt(codec, av_get_planar_sample_fmt(src->getFormat()))
+        // TODO: is it faster to write in desired format instread of converting to desired format???
+        codec_context->sample_fmt = src->getFormat();
         tmp = src;
     } else {
         codec_context->sample_fmt = codec->sample_fmts[0];
 
         // Do conversion first
-        tmp = new structures::AudioContainer<uint8_t>(av_get_packed_sample_fmt(codec_context->sample_fmt));
-        tmp->copy_unfilled_format(src);
+        tmp = new structures::AudioContainer<uint8_t>(codec_context->sample_fmt, src->getChannelCount());
+        tmp->copyUnfilledFormat(src);
         processing::AudioConverter converter(src, tmp);
 
-        if(!converter.convert()) {
+        if (!converter.convert()) {
             ffmpeg_utils::log_error(AudioWrite_TAG, "Could not convert input data to the writing format.");
             return false;
         }
@@ -148,13 +145,13 @@ bool AudioWriter::open_file() {
 
     /* Set the basic encoder parameters.
     * The input file's sample rate is used to avoid a sample rate conversion. */
-    codec_context->channels = src->channels;
-    codec_context->channel_layout = static_cast<uint64_t>(av_get_default_channel_layout(src->channels));
-    codec_context->sample_rate = src->sample_rate;
-    if(!pick_sample_format()) return false;
+    codec_context->channels = src->getChannelCount();
+    codec_context->channel_layout = static_cast<uint64_t>(av_get_default_channel_layout(src->getChannelCount()));
+    codec_context->sample_rate = src->getSampleRate();
+    if (!pick_sample_format()) return false;
 
     /* Set the sample rate for the container. */
-    stream->time_base.den = src->sample_rate;
+    stream->time_base.den = src->getSampleRate();
     stream->time_base.num = 1;
 
     if (format->flags & AVFMT_GLOBALHEADER) codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
@@ -179,18 +176,19 @@ bool AudioWriter::open_file() {
 
 bool AudioWriter::write_frame(bool &finished, AVFrame *frame) {
     // Fill the frame with sample data
-    if(frame != nullptr) {
+    if (frame != nullptr) {
         frame->pts = sample_cursor;
-        frame->nb_samples = std::min(tmp->get_sample_count() - sample_cursor, max_frame_size);
+        frame->nb_samples = std::min(tmp->getSampleCount() - sample_cursor, max_frame_size);
 
-        if(writing_planar) fill_frame_planar(frame);
+        if (writing_planar) fill_frame_planar(frame);
         else fill_frame_packed(frame);
+        sample_cursor += frame->nb_samples;
     }
 
     /* Send the audio frame stored in the temporary packet to the encoder.
      * The output audio stream encoder is used to do this. */
     if ((error = avcodec_send_frame(codec_context, frame)) < 0) {
-        if(error == AVERROR_EOF) {
+        if (error == AVERROR_EOF) {
             error = 0;
             finished = true;
             return true;
@@ -202,10 +200,10 @@ bool AudioWriter::write_frame(bool &finished, AVFrame *frame) {
 
     /* Receive one encoded frame from the encoder. */
     if ((error = avcodec_receive_packet(codec_context, &packet)) < 0) {
-        if(error == AVERROR(EAGAIN)) {
+        if (error == AVERROR(EAGAIN)) {
             error = 0;
             return true;
-        } else if(error == AVERROR_EOF) {
+        } else if (error == AVERROR_EOF) {
             error = 0;
             finished = true;
             return true;
@@ -225,23 +223,12 @@ bool AudioWriter::write_frame(bool &finished, AVFrame *frame) {
 }
 
 bool AudioWriter::fill_frame_planar(AVFrame *frame) {
-    int next_sample_cursor = sample_cursor + frame->nb_samples;
-    int planar_cursor = 0;
-    for(; sample_cursor < next_sample_cursor; sample_cursor++) {
-        for (int c = 0; c < codec_context->channels; ++c) {
-            std::copy(data_cursor, data_cursor + sample_byte_size, frame->data[c] + planar_cursor);
-            data_cursor += sample_byte_size;
-        }
-
-        planar_cursor += sample_byte_size;
-    }
-
+    int offset = sample_cursor * sample_byte_size;
+    for (int i = 0; i < codec_context->channels; ++i) frame->data[i] = tmp->getByteData(i) + offset;
     return true;
 }
 
 bool AudioWriter::fill_frame_packed(AVFrame *frame) {
-    frame->data[0] = data_cursor;
-    data_cursor = data_cursor + frame->nb_samples * sample_byte_size * codec_context->channels;
-    sample_cursor += frame->nb_samples;
+    frame->data[0] = tmp->getByteData() + sample_cursor * sample_byte_size * codec_context->channels;
     return true;
 }

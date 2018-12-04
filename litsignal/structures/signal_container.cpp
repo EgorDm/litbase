@@ -8,25 +8,25 @@
 using namespace litsignal::structures;
 
 SignalContainer::SignalContainer(int sample_rate, int channels)
-        : TypedAudioContainerInterface<double>(AV_SAMPLE_FMT_DBLP, sample_rate, channels), data() {}
+        : TypedAudioContainerInterface<double>(AV_SAMPLE_FMT_DBLP, channels, sample_rate), data() {}
 
 SignalContainer::SignalContainer(arma::mat data, int sample_rate)
-        : TypedAudioContainerInterface<double>(AV_SAMPLE_FMT_DBLP, sample_rate, (int) data.n_cols),
+        : TypedAudioContainerInterface<double>(AV_SAMPLE_FMT_DBLP, (int) data.n_cols, sample_rate),
           data(std::move(data)) {}
 
-const uint8_t *SignalContainer::get_char_data() const {
-    return reinterpret_cast<const uint8_t *>(data.memptr());
+const uint8_t *SignalContainer::getByteData(int channel) const {
+    return reinterpret_cast<const uint8_t *>(data.colptr(static_cast<const arma::uword>(channel)));
 }
 
-const double *SignalContainer::get_data() const {
-    return data.memptr();
+const double *SignalContainer::getData(int channel) const {
+    return data.colptr(static_cast<const arma::uword>(channel));
 }
 
-int SignalContainer::get_sample_count() const {
+int SignalContainer::getSampleCount() const {
     return (int) data.n_rows;
 }
 
-void SignalContainer::set_sample_count(int sample_count) {
+void SignalContainer::setSampleCount(int sample_count) {
     data.resize(static_cast<const arma::uword>(sample_count), data.n_cols);
 }
 

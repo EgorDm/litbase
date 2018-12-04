@@ -15,8 +15,10 @@ bool litaudiofile::AudioReader<O>::read() {
 
     if(!read_file()) return false;
 
-    dst->copy_unfilled_format(&tmp);
-    processing::AudioConverter converter(&tmp, dst);
+    dst->copyUnfilledFormat(tmp);
+    dst->resetData();
+
+    processing::AudioConverter converter(tmp, dst);
     return converter.convert();
 }
 
@@ -70,10 +72,11 @@ bool AudioReader<O>::open_file() {
 
     // Set correct reading format
     auto tmp_format = av_get_packed_sample_fmt(codec->sample_fmts[0]);
-    tmp = structures::AudioContainer<uint8_t>(tmp_format, {}, 0, codec_context->sample_rate,
-                                              codec_context->channels);
-    if (ffmpeg_utils::supports_sample_fmt(codec, dst->format)) tmp.format = dst->format;
-    codec_context->request_sample_fmt = tmp.format;
+    if (ffmpeg_utils::supports_sample_fmt(codec, dst->getFormat())) tmp_format = dst->getFormat();
+    codec_context->request_sample_fmt = tmp_format;
+
+    // Create the temporary audio container
+    tmp = new structures::AudioContainer<uint8_t>(tmp_format, codec_context->channels, codec_context->sample_rate);
 
     if ((error = avcodec_open2(codec_context, codec, nullptr)) < 0) {
         ffmpeg_utils::log_error(AudioReader_TAG, "Couldn't open the context with the decoder.", error);
@@ -89,11 +92,8 @@ bool AudioReader<O>::read_file() {
     frame = av_frame_alloc();
     av_init_packet(&packet);
 
-    reading_planar = static_cast<bool>(av_sample_fmt_is_planar(tmp.format));
-    if(reading_planar) tmp.format = av_get_packed_sample_fmt(tmp.format); // We read it as packed.
-
     // Read the data
-    sample_byte_size = tmp.sample_byte_size();
+    sample_byte_size = tmp->getSampleByteSize();
     bool finished = false;
     bool success = false;
     int sample_count = 0;
@@ -104,7 +104,7 @@ bool AudioReader<O>::read_file() {
         if(!success) return false;
     }
 
-    tmp.sample_count = sample_count;
+    tmp->setSampleCount(sample_count);
     return true;
 }
 
@@ -153,23 +153,16 @@ bool AudioReader<O>::read_frame(bool &finished, int &sample_count) {
 
 template<typename O>
 bool AudioReader<O>::handle_frame_packed() {
-    int cursor_end = frame->nb_samples * tmp.channels * sample_byte_size;
-    tmp.data.insert(tmp.data.end(), frame->extended_data[0], frame->extended_data[0] + cursor_end);
+    int cursor_end = frame->nb_samples * tmp->getChannelCount() * sample_byte_size;
+    tmp->getDataContainer().insert(tmp->getDataContainer().end(), frame->extended_data[0], frame->extended_data[0] + cursor_end);
     return true;
 }
 
 template<typename O>
 bool AudioReader<O>::handle_frame_planar() {
-    int frame_cursor = 0;
     int cursor_end = frame->nb_samples * sample_byte_size;
-
-    while (frame_cursor < cursor_end) {
-        for (int c = 0; c < tmp.channels; ++c) {
-            tmp.data.insert(tmp.data.end(), frame->extended_data[c] + frame_cursor,
-                            frame->extended_data[c] + frame_cursor + sample_byte_size);
-        }
-        frame_cursor += sample_byte_size;
+    for (int c = 0; c < tmp->getChannelCount(); ++c) {
+        tmp->getDataContainer(c).insert(tmp->getDataContainer(c).end(), frame->extended_data[c], frame->extended_data[c] + cursor_end);
     }
-
     return true;
 }

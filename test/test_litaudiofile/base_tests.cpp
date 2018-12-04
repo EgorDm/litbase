@@ -20,7 +20,7 @@ TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
     ASSERT_TRUE(reader.read());
 
     auto dst = src->clone<uint16_t>();
-    dst->sample_rate = src->sample_rate / 2;
+    dst->setSampleRate(src->getSampleRate() / 2);
     auto converter = processing::AudioConverter(src, dst);
     ASSERT_TRUE(converter.convert());
 

@@ -14,13 +14,13 @@ SignalResampler::SignalResampler(SignalContainer *input, SignalContainer *output
 
 bool SignalResampler::resample() {
     try {
-        const int p = (const int) roundf(1000 * output->sample_rate / input->sample_rate);
+        const int p = (const int) roundf(1000 * output->getSampleRate() / input->getSampleRate());
         const int q = 1000;
 
         std::vector<arma::vec> channels;
-        channels.reserve(static_cast<unsigned long>(input->channels));
-        for (int c = 0; c < input->channels; ++c) {
-            channels.push_back(detail::resample(input->get_data_vec(), p, q));
+        channels.reserve(static_cast<unsigned long>(input->getChannelCount()));
+        for (int c = 0; c < input->getChannelCount(); ++c) {
+            channels.push_back(detail::resample(input->get_data_vec().col(c), p, q));
         }
 
         output->set_data_vec(mat_utils::mat_from_vecs(channels));

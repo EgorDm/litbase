@@ -4,39 +4,58 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+
 extern "C" {
 #include <libavutil/samplefmt.h>
 }
 
 namespace litaudio { namespace structures {
     class AudioContainerInterface {
-    public:
+    protected:
         AVSampleFormat format;
         int sample_rate;
         int channels;
 
-        AudioContainerInterface() : format(AV_SAMPLE_FMT_NONE), sample_rate(-1), channels(-1) {}
-
-        explicit AudioContainerInterface(const AVSampleFormat &format)
-                : format(format), sample_rate(-1), channels(-1) {}
-
-        AudioContainerInterface(AVSampleFormat format, int sample_rate, int channels)
+    public:
+        explicit AudioContainerInterface(AVSampleFormat format = AV_SAMPLE_FMT_NONE, int channels = -1, int sample_rate = -1)
                 : format(format), sample_rate(sample_rate), channels(channels) {}
 
         virtual ~AudioContainerInterface() = default;
 
-        int sample_byte_size() const;
+        const uint8_t *getByteData() const;
 
-        bool same_format(const AudioContainerInterface *other) const;
+        uint8_t *getByteData(int channel = 0);
 
-        virtual const uint8_t *get_char_data() const = 0;
+        virtual const uint8_t *getByteData(int channel) const = 0;
 
-        uint8_t *get_char_data();
+        std::vector<uint8_t *> getByteChannelData();
 
-        virtual int get_sample_count() const = 0;
+        const std::vector<const uint8_t *> getByteChannelData() const;
 
-        virtual void set_sample_count(int sample_count) = 0;
+        int getSampleByteSize() const;
 
-        virtual void copy_unfilled_format(const AudioContainerInterface *src);
+        virtual int getSampleCount() const = 0;
+
+        virtual void setSampleCount(int sample_count) = 0;
+
+        AVSampleFormat getFormat() const;
+
+        void setFormat(AVSampleFormat format);
+
+        int getSampleRate() const;
+
+        void setSampleRate(int sample_rate);
+
+        int getChannelCount() const;
+
+        int getChannelDimCount() const;
+
+        bool isSameFormat(const AudioContainerInterface *other) const;
+
+        bool isPlanar() const;
+
+        virtual void copyUnfilledFormat(const AudioContainerInterface *src);
     };
 }}

@@ -10,7 +10,7 @@ using namespace litaudio;
 
 PCMAudio *simplified::read_audio_pcm(const std::string &path, int sample_rate)  {
     auto ret = new PCMAudio();
-    ret->sample_rate = sample_rate;
+    ret->setSampleRate(sample_rate);
 
     AudioReader<float > reader(ret, path);
     if (!reader.read()) {

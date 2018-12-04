@@ -12,9 +12,9 @@ extern "C" {
 
 namespace litaudio { namespace structures {
     struct PCMAudio : public AudioContainer<float> {
-        PCMAudio() : AudioContainer<float>(AV_SAMPLE_FMT_FLT) {}
+        explicit PCMAudio(int channels = -1) : AudioContainer<float>(AV_SAMPLE_FMT_FLT, channels) {}
 
-        PCMAudio(std::vector<float> &data, int sample_count, int sample_rate, int channels)
+        PCMAudio(const AudioContainer<float>::DataContainer &data, int sample_count, int sample_rate, int channels)
                 : AudioContainer<float>(AV_SAMPLE_FMT_FLT, data, sample_count, sample_rate, channels) {}
     };
 }};

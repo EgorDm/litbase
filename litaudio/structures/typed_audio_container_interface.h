@@ -10,17 +10,17 @@ namespace litaudio { namespace structures {
     template<typename T>
     class TypedAudioContainerInterface : public AudioContainerInterface {
     public:
-        TypedAudioContainerInterface() : AudioContainerInterface() {}
+        explicit TypedAudioContainerInterface(AVSampleFormat format = AV_SAMPLE_FMT_NONE, int channels = -1, int sample_rate = -1)
+                : AudioContainerInterface(format, channels, sample_rate) {}
 
-        explicit TypedAudioContainerInterface(const AVSampleFormat &format) : AudioContainerInterface(format) {}
+        virtual const T *getData() {
+            return getData(0);
+        }
 
-        TypedAudioContainerInterface(AVSampleFormat format, int sample_rate, int channels)
-                : AudioContainerInterface(format, sample_rate, channels) {}
+        virtual const T *getData(int channel) const = 0;
 
-        virtual const T *get_data() const = 0;
-
-        virtual T *get_data() {
-            return const_cast<T *>(static_cast<const TypedAudioContainerInterface<T> *>(this)->get_data());
+        T *getData(int channel = 0) {
+            return const_cast<T *>(static_cast<const TypedAudioContainerInterface<T> *>(this)->getData(channel));
         };
     };
 }}
