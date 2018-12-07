@@ -9,21 +9,19 @@
 using namespace litaudiofile;
 using namespace litaudio;
 
-template<typename O>
-bool litaudiofile::AudioReader<O>::read() {
+bool litaudiofile::AudioReader::read() {
     if(!open_file()) return false;
 
     if(!read_file()) return false;
 
     dst->copyUnfilledFormat(tmp);
-    dst->resetData();
+    dst->clear();
 
     processing::AudioConverter converter(tmp, dst);
     return converter.convert();
 }
 
-template<typename O>
-bool AudioReader<O>::open_file() {
+bool AudioReader::open_file() {
     format_context = avformat_alloc_context();
 
     // Open file
@@ -86,8 +84,7 @@ bool AudioReader<O>::open_file() {
     return true;
 }
 
-template<typename O>
-bool AudioReader<O>::read_file() {
+bool AudioReader::read_file() {
     // Allocate frame
     frame = av_frame_alloc();
     av_init_packet(&packet);
@@ -108,8 +105,7 @@ bool AudioReader<O>::read_file() {
     return true;
 }
 
-template<typename O>
-bool AudioReader<O>::read_frame(bool &finished, int &sample_count) {
+bool AudioReader::read_frame(bool &finished, int &sample_count) {
     if((error = av_read_frame(format_context, &packet)) < 0) {
         if(error == AVERROR_EOF) {
             finished = true;
@@ -151,15 +147,13 @@ bool AudioReader<O>::read_frame(bool &finished, int &sample_count) {
     return true;
 }
 
-template<typename O>
-bool AudioReader<O>::handle_frame_packed() {
+bool AudioReader::handle_frame_packed() {
     int cursor_end = frame->nb_samples * tmp->getChannelCount() * sample_byte_size;
     tmp->getDataContainer().insert(tmp->getDataContainer().end(), frame->extended_data[0], frame->extended_data[0] + cursor_end);
     return true;
 }
 
-template<typename O>
-bool AudioReader<O>::handle_frame_planar() {
+bool AudioReader::handle_frame_planar() {
     int cursor_end = frame->nb_samples * sample_byte_size;
     for (int c = 0; c < tmp->getChannelCount(); ++c) {
         tmp->getDataContainer(c).insert(tmp->getDataContainer(c).end(), frame->extended_data[c], frame->extended_data[c] + cursor_end);

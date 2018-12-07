@@ -47,6 +47,7 @@ bool AudioConverter::convert() {
     }
 
     // Set pcm infomation
+    dst->clear();
     dst->setSampleCount(swr_get_out_samples(context, src->getSampleCount()));
 
     auto dst_data = dst->getByteChannelData();

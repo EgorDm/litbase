@@ -20,7 +20,7 @@ namespace litaudiofile { namespace simplified {
         auto ret = new AudioContainer<T>(format);
         ret->sample_rate = sample_rate;
 
-        auto reader = AudioReader<T>(ret, path);
+        auto reader = AudioReader(ret, path);
         if (!reader.read()) {
             delete ret;
             debug::log_error(LitAudioSimplified_TAG, "Failed to read audio file: " + path);

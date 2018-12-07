@@ -7,12 +7,20 @@
 
 using namespace litsignal::structures;
 
+SignalContainer::SignalContainer()
+        : TypedAudioContainerInterface<double>(AV_SAMPLE_FMT_DBLP) {}
+
 SignalContainer::SignalContainer(int sample_rate, int channels)
         : TypedAudioContainerInterface<double>(AV_SAMPLE_FMT_DBLP, channels, sample_rate), data() {}
 
 SignalContainer::SignalContainer(arma::mat data, int sample_rate)
         : TypedAudioContainerInterface<double>(AV_SAMPLE_FMT_DBLP, (int) data.n_cols, sample_rate),
           data(std::move(data)) {}
+
+void SignalContainer::clear() {
+    AudioContainerInterface::clear();
+    data = arma::mat(0, static_cast<const arma::uword>(getChannelCount()));
+}
 
 const uint8_t *SignalContainer::getByteData(int channel) const {
     return reinterpret_cast<const uint8_t *>(data.colptr(static_cast<const arma::uword>(channel)));
@@ -27,7 +35,7 @@ int SignalContainer::getSampleCount() const {
 }
 
 void SignalContainer::setSampleCount(int sample_count) {
-    data.resize(static_cast<const arma::uword>(sample_count), data.n_cols);
+    data.resize(static_cast<const arma::uword>(sample_count), getChannelCount());
 }
 
 const arma::mat &SignalContainer::get_data_vec() const {

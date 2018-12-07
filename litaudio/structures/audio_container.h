@@ -26,7 +26,7 @@ namespace litaudio { namespace structures {
     public:
         explicit AudioContainer(AVSampleFormat format = AV_SAMPLE_FMT_NONE, int channels = -1, int sample_rate = -1)
                 : TypedAudioContainerInterface<T>(format, channels, sample_rate) {
-            resetData();
+            clear();
         }
 
         AudioContainer(AVSampleFormat format, const DataContainer &data, int sample_count, int sample_rate, int channels)
@@ -34,7 +34,8 @@ namespace litaudio { namespace structures {
                   data(data),
                   sample_count(sample_count) {}
 
-        inline void resetData() {
+        void clear() override {
+            AudioContainerInterface::clear();
             if(parent_type::getChannelCount() <= 0) return;
             data.clear();
             data.resize(parent_type::getChannelDimCount());
@@ -73,7 +74,7 @@ namespace litaudio { namespace structures {
         inline AudioContainer<O> *clone() const {
             auto ret = new AudioContainer<O>(parent_type::format);
             ret->copyUnfilledFormat(this);
-            ret->resetData();
+            ret->clear();
             return ret;
         }
     };

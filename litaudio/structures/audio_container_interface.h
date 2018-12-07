@@ -24,6 +24,8 @@ namespace litaudio { namespace structures {
 
         virtual ~AudioContainerInterface() = default;
 
+        virtual void clear();
+
         const uint8_t *getByteData() const;
 
         uint8_t *getByteData(int channel = 0);

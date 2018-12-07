@@ -16,7 +16,7 @@ class LitAudioFileBaseTests : public ::testing::Test {
 
 TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
     auto src = new AudioContainer<uint16_t>(AV_SAMPLE_FMT_S16);
-    auto reader = AudioReader<uint16_t>(src, "data/hangar.mp3");
+    auto reader = AudioReader(src, "data/hangar.mp3");
     ASSERT_TRUE(reader.read());
 
     auto dst = src->clone<uint16_t>();

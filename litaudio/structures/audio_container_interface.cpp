@@ -67,3 +67,7 @@ const std::vector<const uint8_t *> AudioContainerInterface::getByteChannelData()
     for (int i = 0; i < getChannelDimCount(); ++i) ret.push_back(getByteData(i));
     return ret;
 }
+
+void AudioContainerInterface::clear() {
+
+}

@@ -25,3 +25,4 @@ function(init_test_project DEPENDENCIES)
 endfunction()
 
 add_subdirectory(test_litaudiofile)
+add_subdirectory(test_litsignal)

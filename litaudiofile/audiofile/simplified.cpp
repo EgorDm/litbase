@@ -12,7 +12,7 @@ PCMAudio *simplified::read_audio_pcm(const std::string &path, int sample_rate)  
     auto ret = new PCMAudio();
     ret->setSampleRate(sample_rate);
 
-    AudioReader<float > reader(ret, path);
+    AudioReader reader(ret, path);
     if (!reader.read()) {
         delete ret;
         debug::log_error(LitAudioSimplified_TAG, "Failed to read audio file: " + path);

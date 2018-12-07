@@ -22,7 +22,6 @@ using namespace litcore::utils;
 using namespace litaudiofile;
 
 namespace litaudiofile {
-    template<typename O>
     class AudioReader {
     private:
         AVFormatContext *format_context = nullptr;
@@ -39,7 +38,7 @@ namespace litaudiofile {
 
     private:
         structures::AudioContainer<uint8_t> *tmp = nullptr;
-        structures::AudioContainer<O> *dst;
+        structures::AudioContainerInterface *dst;
         std::string path;
 
         bool open_file();
@@ -53,7 +52,7 @@ namespace litaudiofile {
         bool handle_frame_planar();
 
     public:
-        AudioReader(structures::AudioContainer<O> *dst, std::string path)
+        AudioReader(structures::AudioContainerInterface *dst, std::string path)
                 : dst(dst), path(std::move(path)) {}
 
         virtual ~AudioReader() {
@@ -67,5 +66,3 @@ namespace litaudiofile {
         bool read();
     };
 }
-
-#include "reading.cpp"

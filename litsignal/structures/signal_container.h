@@ -16,9 +16,13 @@ namespace litsignal { namespace structures {
         arma::mat data;
 
     public:
+        SignalContainer();
+
         SignalContainer(int sample_rate, int channels);
 
         SignalContainer(arma::mat data, int sample_rate);
+
+        void clear() override;
 
         const uint8_t *getByteData(int channel) const override;
 
