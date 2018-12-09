@@ -32,9 +32,9 @@ namespace litsignal { namespace helpers {
 
             // Pad the frame start
             if (start < 0) {
-                start = std::min(abs(start), end);
-                offset = start;
-                std::memset(frame_ptr, 0, start * sizeof(double));
+                offset = std::min(abs(start), end);
+                start = start + offset;
+                std::memset(frame_ptr, 0, offset * sizeof(double));
             }
 
             // Pad the frame end
