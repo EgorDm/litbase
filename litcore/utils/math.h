@@ -11,4 +11,6 @@ namespace lit {namespace math {
     int calc_gcd(int n1, int n2);
 
     int quotient_ceil(int n1, int n2);
+
+    int fix(double x);
 }};

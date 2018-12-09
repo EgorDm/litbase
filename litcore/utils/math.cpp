@@ -3,6 +3,7 @@
 //
 
 #include <algorithm>
+#include <cmath>
 #include "math.h"
 
 using namespace lit;
@@ -24,4 +25,8 @@ int math::calc_gcd(int n1, int n2) {
 int math::quotient_ceil(int n1, int n2) {
     if (n1 % n2 != 0) return n1 / n2 + 1;
     return n1 / n2;
+}
+
+int math::fix(double x) {
+    return static_cast<int>(x >= 0 ? floor(x) : ceil(x));
 }

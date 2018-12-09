@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(Utils.cmake)
 
 init_debug()
+add_openmp()
 
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs")
 set(SIGPACK_INCLUDE_DIR "${LIB_DIR}/sigpack")

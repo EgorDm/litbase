@@ -2,8 +2,6 @@ project(litsignal C CXX)
 
 select_source_files()
 
-add_openmp()
-
 find_package(FFTW REQUIRED)
 add_definitions(-DHAVE_FFTW)
 find_package(Armadillo REQUIRED)
