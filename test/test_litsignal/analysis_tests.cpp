@@ -5,14 +5,14 @@
 #include <gmock/gmock.h>
 #include <structures/signal_container.h>
 #include <audiofile/reading.h>
-#include <analysis/fourier_analysis.h>
 #include <utils/litsignal_math.h>
-#include <analysis/stft_processor.h>
 #include <utils/pulse_utils.h>
 #include "test_helpers.h"
+#include <analysis/stft_pipeline.h>
 
 using namespace litsignal::structures;
 using namespace litsignal::analysis;
+using namespace litsignal::algorithm;
 using namespace litsignal;
 using namespace litaudiofile;
 
@@ -33,12 +33,13 @@ TEST_F(LitSignalAnalysisTests, SFFT_Performace_Test) {
 
     int window_size = static_cast<int>(1024 * signal.getSampleRate() / 22050.);
     int hop_size = window_size / 2;
+    int sample_rate = signal.getSampleRate();
     vec window = lit::math::my_hanning(window_size);
     vec X = signal.get_data_vec().col(0);
 
     clock_t begin = clock();
 
-    fourier_analysis::STFTProcessor stft_processor(X, S, feature_rate, t, f, signal.getSampleRate(), window, hop_size);
+    STFTPipeline stft_processor(new STFTPipeline::SimpleRunner(), X, S, feature_rate, t, f, sample_rate, window, hop_size);
     stft_processor.process();
 
     clock_t end = clock();
@@ -63,7 +64,7 @@ TEST_F(LitSignalAnalysisTests, SFFT_Correctness_Test) {
     vec window = lit::math::my_hanning(window_size);
     vec X = sine;
 
-    fourier_analysis::STFTProcessor stft_processor(X, S, feature_rate, t, f, sample_rate, window, hop_size);
+    STFTPipeline stft_processor(new STFTPipeline::SimpleRunner(), X, S, feature_rate, t, f, sample_rate, window, hop_size);
     stft_processor.process();
 
     mat Sa = abs(S);
