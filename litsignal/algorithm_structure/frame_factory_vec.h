@@ -10,7 +10,8 @@
 using namespace arma;
 
 namespace litsignal { namespace algorithm {
-    class FrameFactoryVec : public FrameFactoryInterface<vec, vec> {
+    template <typename T>
+    class FrameFactoryVec : public FrameFactoryInterface<Col<T>, Col<T>> {
     private:
         int frame_size;
         int frame_half_size;
@@ -20,36 +21,36 @@ namespace litsignal { namespace algorithm {
         FrameFactoryVec(int frame_size, int hop_size)
                 : frame_size(frame_size), hop_size(hop_size), frame_half_size(frame_size / 2) {}
 
-        vec create() override {
-            return arma::vec(ACU(frame_size));
+        Col<T> create() override {
+            return Col<T>(ACU(frame_size));
         }
 
-        void fill(const vec &input, vec &frame, int i) override {
+        void fill(const Col<T> &input, Col<T> &frame, int i) override {
             int start = -frame_half_size + i * hop_size;
             int offset = 0;
             int end = start + frame_size;
-            double *frame_ptr = frame.memptr();
+            T *frame_ptr = frame.memptr();
 
             // Pad the frame start
             if (start < 0) {
                 offset = std::min(abs(start), end);
                 start = start + offset;
-                std::memset(frame_ptr, 0, offset * sizeof(double));
+                std::memset(frame_ptr, 0, offset * sizeof(T));
             }
 
             // Pad the frame end
             if (end > input.size()) {
                 int diff = static_cast<int>(end - input.size());
                 end = static_cast<int>(input.size());
-                std::memset(frame_ptr + frame_size - diff, 0, diff * sizeof(double));
+                std::memset(frame_ptr + frame_size - diff, 0, diff * sizeof(T));
             }
 
             // Fill the frame
-            std::memcpy(frame_ptr + offset, input.memptr() + start, (end - start) * sizeof(double));
+            std::memcpy(frame_ptr + offset, input.memptr() + start, (end - start) * sizeof(T));
         }
 
-        int getFrameCount(const vec &input) override {
-            return static_cast<int>(std::ceil(input.size() / (float) hop_size));
+        int getFrameCount(const Col<T> &input) override {
+            return static_cast<int>(std::ceil(input.size() / (float) hop_size)) + 1;
         }
 
         int getFrameSize() const {

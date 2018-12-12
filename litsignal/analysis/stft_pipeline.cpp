@@ -8,8 +8,9 @@
 using namespace litsignal::algorithm;
 using namespace litsignal::analysis;
 
-cx_mat calculate_stft(const vec &input, int &feature_rate, vec &t, vec &f, int sr, const vec &window, int hop_size,
-                      const span &coefficient_range, bool mirror) {
+cx_mat litsignal::analysis::calculate_stft(const vec &input, int &feature_rate, vec &t, vec &f, int sr,
+                                           const vec &window, int hop_size, const span &coefficient_range,
+                                           bool mirror) {
     cx_mat S;
     STFTPipeline stft_processor(new STFTPipeline::SimpleRunner(), input, S, feature_rate, t, f, sr, window, hop_size,
                                 coefficient_range, mirror);
@@ -19,9 +20,8 @@ cx_mat calculate_stft(const vec &input, int &feature_rate, vec &t, vec &f, int s
 }
 
 STFTPipeline::STFTPipeline(RunnerType *runner, const vec &input, cx_mat &output, int &feature_rate, vec &t, vec &f,
-                           int sr,
-                           const vec &window, int hop_size, const span &coefficient_range, bool mirror)
-        : AlgorthmPipelineInterface(input, output, runner, new FrameFactoryVec(ACI(window.size()), hop_size)),
+                           int sr, const vec &window, int hop_size, const span &coefficient_range, bool mirror)
+        : AlgorthmPipelineInterface(input, output, runner, new FrameFactoryVec<double>(ACI(window.size()), hop_size)),
           sr(sr), coefficient_range(coefficient_range), feature_rate(feature_rate), t(t), f(f),
           node_window(window), node_fft(mirror) {
     if (coefficient_range.a == coefficient_range.b) this->coefficient_range = span(0, window.size() / 2);
@@ -40,7 +40,7 @@ void STFTPipeline::processFrame(FFTContext &context, vec &frame, int i) {
 }
 
 void STFTPipeline::postProcess() {
-    auto *ffactory = dynamic_cast<FrameFactoryVec *>(getFrameFactory());
+    auto *ffactory = dynamic_cast<FrameFactoryVec<double> *>(getFrameFactory());
 
     feature_rate = sr / ffactory->getHopSize();
     t = regspace<vec>(0, ffactory->getFrameCount(input) - 1) * (ffactory->getHopSize() / (double) sr);

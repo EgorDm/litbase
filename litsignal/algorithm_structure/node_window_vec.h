@@ -21,5 +21,9 @@ class NodeWindowVec : public AlgorithmNodeInterface<void, void, arma::vec> {
         void apply(arma::vec &frame, void *context) override {
             frame %= window;
         }
+
+        int getWindowSize() {
+            return ACI(window.size());
+        }
     };
 }}
