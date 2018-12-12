@@ -14,11 +14,15 @@ namespace litsignal { namespace algorithm {
             F frame = algorithm->getFrameFactory()->create();
             C context = algorithm->createContext(frame);
 
+            algorithm->preProcess();
+
             int frameCount = algorithm->getFrameFactory()->getFrameCount(algorithm->getInput());
             for (int i = 0; i < frameCount; ++i) {
                 algorithm->getFrameFactory()->fill(algorithm->getInput(), frame, i);
-                algorithm->process(context, frame, i);
+                algorithm->processFrame(context, frame, i);
             }
+
+            algorithm->postProcess();
         }
     };
 }}

@@ -8,6 +8,7 @@
 #include <cmath>
 
 #define ACU(x) static_cast<const arma::uword>(x)
+#define ACI(x) static_cast<int>(x)
 
 namespace litsignal { namespace constants {
     constexpr double PISQ = M_PI * M_PI;

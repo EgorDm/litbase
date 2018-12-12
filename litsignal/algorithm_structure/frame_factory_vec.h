@@ -21,10 +21,10 @@ namespace litsignal { namespace algorithm {
                 : frame_size(frame_size), hop_size(hop_size), frame_half_size(frame_size / 2) {}
 
         vec create() override {
-            return arma::vec(frame_size);
+            return arma::vec(ACU(frame_size));
         }
 
-        void fill(vec &input, vec &frame, int i) override {
+        void fill(const vec &input, vec &frame, int i) override {
             int start = -frame_half_size + i * hop_size;
             int offset = 0;
             int end = start + frame_size;
@@ -48,8 +48,20 @@ namespace litsignal { namespace algorithm {
             std::memcpy(frame_ptr + offset, input.memptr() + start, (end - start) * sizeof(double));
         }
 
-        int getFrameCount(vec &input) override {
+        int getFrameCount(const vec &input) override {
             return static_cast<int>(std::ceil(input.size() / (float) hop_size));
+        }
+
+        int getFrameSize() const {
+            return frame_size;
+        }
+
+        int getFrameHalfSize() const {
+            return frame_half_size;
+        }
+
+        int getHopSize() const {
+            return hop_size;
         }
     };
 }}
