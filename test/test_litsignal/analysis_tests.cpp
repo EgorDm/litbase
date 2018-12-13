@@ -7,9 +7,11 @@
 #include <audiofile/reading.h>
 #include <utils/litsignal_math.h>
 #include <utils/pulse_utils.h>
+#include <utils/window_utils.h>
 #include "test_helpers.h"
 #include <analysis/stft_pipeline.h>
 #include <analysis/istft_pipeline.h>
+#include <processing/phase_vocoder_pipeline.h>
 
 using namespace litsignal::structures;
 using namespace litsignal::analysis;
@@ -35,8 +37,10 @@ TEST_F(LitSignalAnalysisTests, SFFT_Performace_Test) {
     int window_size = static_cast<int>(1024 * signal.getSampleRate() / 22050.);
     int hop_size = window_size / 2;
     int sample_rate = signal.getSampleRate();
-    vec window = lit::math::my_hanning(window_size);
+    vec window = window::hanning(window_size);
     vec X = signal.get_data_vec().col(0);
+
+    auto test = litsignal::processing::calculate_phase_vocoder(X, 1.8f);
 
     clock_t begin = clock();
 
@@ -62,7 +66,7 @@ TEST_F(LitSignalAnalysisTests, SFFT_Correctness_Test) {
 
     int window_size = sample_rate;
     int hop_size = window_size / 2;
-    vec window = lit::math::my_hanning(window_size);
+    vec window = window::hanning(window_size);
     vec X = cosine;
 
     cx_mat S = calculate_stft(X, feature_rate, t, f, sample_rate, window, hop_size);

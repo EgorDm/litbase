@@ -10,6 +10,4 @@ using namespace arma;
 
 namespace lit { namespace math {
     vec sinc_fac(const vec &x);
-
-    arma::vec my_hanning(arma::uword N);
 }}

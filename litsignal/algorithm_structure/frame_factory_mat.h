@@ -6,6 +6,7 @@
 
 #include <armadillo>
 #include "algorithm_interface.h"
+#include "../litsignal_constants.h"
 
 using namespace arma;
 

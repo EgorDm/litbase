@@ -12,6 +12,7 @@
 
 namespace litsignal { namespace constants {
     constexpr double PISQ = M_PI * M_PI;
+    constexpr double PI = M_PI;
     constexpr double PI2 = M_PI * 2;
     constexpr double EPSILON = 0.0000001;
 }}
