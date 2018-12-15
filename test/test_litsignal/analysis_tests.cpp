@@ -12,6 +12,7 @@
 #include <analysis/stft_pipeline.h>
 #include <analysis/istft_pipeline.h>
 #include <processing/phase_vocoder_pipeline.h>
+#include <audiofile/simplified.h>
 
 using namespace litsignal::structures;
 using namespace litsignal::analysis;
@@ -24,7 +25,7 @@ protected:
     SignalContainer signal;
 
     void SetUp() override {
-        AudioReader reader(&signal, "data/hangar.mp3");
+        AudioReader reader(&signal, "data/evan.flac");
         if(!reader.read()) throw std::runtime_error("Could load the test file.");
     }
 };
@@ -39,8 +40,6 @@ TEST_F(LitSignalAnalysisTests, SFFT_Performace_Test) {
     int sample_rate = signal.getSampleRate();
     vec window = window::hanning(window_size);
     vec X = signal.get_data_vec().col(0);
-
-    auto test = litsignal::processing::calculate_phase_vocoder(X, 1.8f);
 
     clock_t begin = clock();
 
@@ -77,4 +76,21 @@ TEST_F(LitSignalAnalysisTests, SFFT_Correctness_Test) {
     ASSERT_TRUE(compare_vec(f, regspace(0, sample_rate/2)));
     vec tcomp =regspace<vec>(0, Sa.n_cols - 1) * (window_size / 2 / (double) sample_rate);
     ASSERT_TRUE(compare_vec(t, tcomp));
+}
+
+TEST_F(LitSignalAnalysisTests, PhaseVocoder_Performance_Test) {
+    vec X = signal.get_data_vec().col(0);
+    int sample_rate = signal.getSampleRate();
+
+    clock_t begin = clock();
+
+    auto newSignal = litsignal::processing::calculate_phase_vocoder(X, sample_rate, 1.8f);
+
+    clock_t end = clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout << "Calculated PhaseVocoder in secs: " << elapsed_secs << std::endl;
+
+    auto container = SignalContainer(newSignal, sample_rate);
+    auto ret = litaudiofile::simplified::write_audio("data/output/dst_vocode.wav", &container);
+    if(!ret) std::cout << "FAIL!" << std::endl;
 }

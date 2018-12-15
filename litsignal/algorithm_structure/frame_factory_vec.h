@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by egordm on 11-12-18.
 //
@@ -10,12 +12,17 @@
 using namespace arma;
 
 namespace litsignal { namespace algorithm {
-    template <typename T>
+    template<typename T>
     class FrameFactoryVec : public FrameFactoryInterface<Col<T>, Col<T>> {
     private:
         int frame_size;
         int frame_half_size;
         int hop_size;
+
+    protected:
+        virtual int getPos(int i) {
+            return -frame_half_size + i * hop_size;
+        }
 
     public:
         FrameFactoryVec(int frame_size, int hop_size)
@@ -26,7 +33,7 @@ namespace litsignal { namespace algorithm {
         }
 
         void fill(const Col<T> &input, Col<T> &frame, int i) override {
-            int start = -frame_half_size + i * hop_size;
+            int start = getPos(i);
             int offset = 0;
             int end = start + frame_size;
             T *frame_ptr = frame.memptr();
@@ -61,8 +68,31 @@ namespace litsignal { namespace algorithm {
             return frame_half_size;
         }
 
-        int getHopSize() const {
+        virtual int getHopSize() const {
             return hop_size;
+        }
+    };
+
+    template<typename T>
+    class FrameFactoryVecP : public FrameFactoryVec<T> {
+    private:
+        uvec hop_positions;
+
+    public:
+        FrameFactoryVecP(int frame_size, uvec hop_positions)
+                : FrameFactoryVec<T>(frame_size, 0), hop_positions(std::move(hop_positions)) {}
+
+        int getFrameCount(const Col<T> &input) override {
+            return ACI(hop_positions.size());
+        }
+
+        int getHopSize() const override {
+            return hop_positions.size() < 2 ? 0 : ACI(hop_positions[1] - hop_positions[0]);
+        }
+
+    protected:
+        int getPos(int i) override {
+            return ACI(hop_positions[i]);
         }
     };
 }}

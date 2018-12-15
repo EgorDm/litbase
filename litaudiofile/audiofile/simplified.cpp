@@ -23,6 +23,6 @@ PCMAudio *simplified::read_audio_pcm(const std::string &path, int sample_rate)  
 }
 
 bool simplified::write_audio(const std::string &path, AudioContainerInterface *audio) {
-    auto writer = AudioWriter(audio, "dst.mp3");
+    auto writer = AudioWriter(audio, path);
     return writer.write();
 }

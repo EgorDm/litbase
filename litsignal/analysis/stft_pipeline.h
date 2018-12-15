@@ -15,7 +15,7 @@ using namespace litsignal::algorithm;
 
 namespace litsignal { namespace analysis {
     cx_mat calculate_stft(const vec &input, int &feature_rate, vec &t, vec &f, int sr, const vec &window, int hop_size,
-            const span &coefficient_range = span(0, 0), bool mirror = false);
+                          const span &coefficient_range = span(0, 0), bool mirror = false);
 
     class STFTPipeline : public AlgorthmPipelineInterface<vec, vec, cx_mat, FFTContext> {
     private:
@@ -34,6 +34,10 @@ namespace litsignal { namespace analysis {
 
         STFTPipeline(RunnerType *runner, const vec &input, cx_mat &output, int &feature_rate, vec &t, vec &f, int sr,
                      const vec &window, int hop_size, const span &coefficient_range = span(0, 0), bool mirror = false);
+
+        STFTPipeline(FrameFactoryType *frameFactory, RunnerType *runner, const vec &input, cx_mat &output,
+                     int &feature_rate, vec &t, vec &f, int sr, const vec &window,
+                     const span &coefficient_range = span(0, 0), bool mirror = false);
 
         void preProcess() override;
 

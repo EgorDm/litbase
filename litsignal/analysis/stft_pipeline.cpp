@@ -21,9 +21,14 @@ cx_mat litsignal::analysis::calculate_stft(const vec &input, int &feature_rate, 
 
 STFTPipeline::STFTPipeline(RunnerType *runner, const vec &input, cx_mat &output, int &feature_rate, vec &t, vec &f,
                            int sr, const vec &window, int hop_size, const span &coefficient_range, bool mirror)
-        : AlgorthmPipelineInterface(input, output, runner, new FrameFactoryVec<double>(ACI(window.size()), hop_size)),
-          sr(sr), coefficient_range(coefficient_range), feature_rate(feature_rate), t(t), f(f),
-          node_window(window), node_fft(mirror) {
+        : STFTPipeline(new FrameFactoryVec<double>(ACI(window.size()), hop_size), runner, input, output, feature_rate,
+                       t, f, sr, window, coefficient_range, mirror) {}
+
+STFTPipeline::STFTPipeline(FrameFactoryType *frameFactory, RunnerType *runner, const vec &input, cx_mat &output,
+                           int &feature_rate, vec &t, vec &f, int sr, const vec &window, const span &coefficient_range,
+                           bool mirror)
+        : AlgorthmPipelineInterface(input, output, runner, frameFactory), sr(sr), coefficient_range(coefficient_range),
+          feature_rate(feature_rate), t(t), f(f), node_window(window), node_fft(mirror) {
     if (coefficient_range.a == coefficient_range.b) this->coefficient_range = span(0, window.size() / 2);
 }
 
