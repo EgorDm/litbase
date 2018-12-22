@@ -62,35 +62,30 @@ void PhaseVocoderPipeline::preProcess() {
     Sy(span::all, 0) = S(span::all, 0);
 }
 
-void angle_calc(cx_double *input, double *output, int count) {
-    double x;
-    double y;
-    for (int i = 0; i < count; ++i) {
-        x = input[i].real();
-        y = input[i].imag();
-        output[i] = atan2(y, x);
-    }
-}
+void PhaseVocoderPipeline::processFrame(PhaseVocoderContext &context, cx_vec &frame, int k) {
+    double phase_previous, delta, y_unwrap, mag;
+    cx_double* in = frame.memptr();
+    double *ph_current = context.phase_current.memptr();
+    double *ph_syn = context.phase_syn.memptr();
+    for (int i = 0; i < frame.size(); ++i) {
+        phase_previous = *ph_current;
+        *ph_current = atan2(in->imag(), in->real()); // angle(x+yj) = atan2(y,x);
+        delta = (*ph_current - phase_previous) - omega[i] * input_hop_sizes[k];
+        delta = delta - constants::PI2 * round(delta / (constants::PI2));
+        y_unwrap = omega[i] + delta / input_hop_sizes[k];
 
-void PhaseVocoderPipeline::processFrame(PhaseVocoderContext &context, cx_vec &frame, int i) {
-    angle_calc(frame.memptr(), context.phase_current.memptr(), frame.size());
-    vec delta = (context.phase_current - context.phase_previous) - omega * input_hop_sizes[i];
-    context.phase_previous = context.phase_current;
+        if(k == 0) {
+            *ph_syn = *ph_current;
+        } else {
+            *ph_syn += y_unwrap * syn_hop_size;
+        }
 
-    delta = delta - constants::PI2 * round(delta / (constants::PI2));
-    vec ipa_hop = (omega + delta / input_hop_sizes[i]) * syn_hop_size;
+        mag = abs(*in);
+        Sy(i, k) = cx_double(mag * cos(*ph_syn), mag * sin(*ph_syn));
 
-    if(i == 0) {
-        context.phase_syn = context.phase_current;
-    } else {
-        context.phase_syn = context.phase_syn + ipa_hop;
-    }
-
-    vec theta = context.phase_syn;// - context.phase_current;
-    vec mag = abs(S.col(i));
-
-    for (int j = 0; j < mag.size(); ++j) {
-        Sy(j, i) = cx_double(mag[j] * cos(context.phase_syn[j]), mag[j] * sin(context.phase_syn[j]));
+        in++;
+        ph_current++;
+        ph_syn++;
     }
 }
 
