@@ -25,7 +25,7 @@ protected:
     SignalContainer signal;
 
     void SetUp() override {
-        AudioReader reader(&signal, "data/evan.flac");
+        AudioReader reader(&signal, "data/hangar.mp3");
         if(!reader.read()) throw std::runtime_error("Could load the test file.");
     }
 };

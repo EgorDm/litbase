@@ -21,7 +21,7 @@ namespace litsignal { namespace processing {
         vec phase_syn;
 
         PhaseVocoderContext(int window_size)
-                : phase_current(window_size/2 + 1), phase_previous(window_size/2 + 1), phase_syn(window_size/2 + 1) {
+                : phase_current(window_size/2 + 1, fill::zeros), phase_previous(window_size/2 + 1, fill::zeros), phase_syn(window_size/2 + 1, fill::zeros) {
         }
     };
 

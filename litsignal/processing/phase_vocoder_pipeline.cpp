@@ -68,32 +68,30 @@ void angle_calc(cx_double *input, double *output, int count) {
     for (int i = 0; i < count; ++i) {
         x = input[i].real();
         y = input[i].imag();
-        if (x > 0 && x != 0) {
-            output[i] = 2 * std::atan(y / (sqrt(x * x + y * y) + x));
-        } else if (x < 0 && y == 0) {
-            output[i] = constants::PI;
-        } else {
-            output[i] = std::nan("1");
-        }
+        output[i] = atan2(y, x);
     }
 }
 
 void PhaseVocoderPipeline::processFrame(PhaseVocoderContext &context, cx_vec &frame, int i) {
-    if (i == 0) return;
-
-    auto dphi = omega * input_hop_sizes[i];
     angle_calc(frame.memptr(), context.phase_current.memptr(), frame.size());
-    angle_calc(S.colptr(i - 1), context.phase_previous.memptr(), frame.size()); // TODO: speed up this shit.
-    vec hpi = (context.phase_current - context.phase_previous) - dphi;
-    hpi = hpi - constants::PI2 * round(hpi / (constants::PI2));
-    vec ipa_hop = (omega + hpi / input_hop_sizes[i]) * syn_hop_size;
+    vec delta = (context.phase_current - context.phase_previous) - omega * input_hop_sizes[i];
+    context.phase_previous = context.phase_current;
 
-    angle_calc(Sy.colptr(i - 1), context.phase_syn.memptr(), frame.size());
+    delta = delta - constants::PI2 * round(delta / (constants::PI2));
+    vec ipa_hop = (omega + delta / input_hop_sizes[i]) * syn_hop_size;
 
-    vec theta = context.phase_syn + ipa_hop - context.phase_current;
-    cx_vec phasor = exp(cx_double(0, 1) * theta);
+    if(i == 0) {
+        context.phase_syn = context.phase_current;
+    } else {
+        context.phase_syn = context.phase_syn + ipa_hop;
+    }
 
-    Sy(span::all, i) = phasor % S.col(i);
+    vec theta = context.phase_syn;// - context.phase_current;
+    vec mag = abs(S.col(i));
+
+    for (int j = 0; j < mag.size(); ++j) {
+        Sy(j, i) = cx_double(mag[j] * cos(context.phase_syn[j]), mag[j] * sin(context.phase_syn[j]));
+    }
 }
 
 void PhaseVocoderPipeline::postProcess() {
