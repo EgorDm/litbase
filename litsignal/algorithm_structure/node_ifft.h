@@ -32,6 +32,7 @@ namespace litsignal { namespace algorithm {
             auto *in = reinterpret_cast<fftw_complex *>(frame.memptr());
             auto *out = context->ifft.memptr();
             fftw_execute_dft_c2r(context->plan, in, out);
+            context->ifft /= context->ifft.size(); // Normalize output
         }
     };
 }}

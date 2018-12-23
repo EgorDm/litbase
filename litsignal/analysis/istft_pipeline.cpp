@@ -17,8 +17,9 @@ vec litsignal::analysis::calculate_istft(const cx_mat &input, const vec &window,
 ISTFTPipeline::ISTFTPipeline(AlgorthmPipelineInterface::RunnerType *runner, const cx_mat &input, vec &output,
                              const vec &window, int hop_size)
         : AlgorthmPipelineInterface(input, output, runner, new FrameFactoryMat<cx_double>()),
-          node_window(window), node_ifft(), hop_size(hop_size), window_sq(square(window)) {
+          node_window(window), node_ifft(), hop_size(hop_size), window_inv(window) {
     if(hop_size < 0) hop_size = ACI(window.size() / 2);
+    window_inv /= sqrt((window.size() / (double)hop_size) / 2.);
 }
 
 void ISTFTPipeline::preProcess() {
@@ -34,15 +35,10 @@ void ISTFTPipeline::processFrame(IFFTContext &context, cx_vec &frame, int i) {
 
     // TODO: This is NOT threadsave
     uint pos = static_cast<uint>(i * hop_size);
-    output(span(pos, pos + node_window.getWindowSize() - 1)) += frame_processed;
-    window_overlap_sum(span(pos, pos + node_window.getWindowSize() - 1)) += window_sq;
+    output(span(pos, pos + node_window.getWindowSize() - 1)) += frame_processed % window_inv;
 }
 
 void ISTFTPipeline::postProcess() {
-    // Divide by window. But also avoid division by zero
-    window_overlap_sum.elem(find(window_overlap_sum < 0.0001)).fill(1);
-    output /= window_overlap_sum;
-
     // Signal was padded during stft. Probably
     uint window_half_size = static_cast<uint>(node_window.getWindowSize() / 2);
     output = output(span(window_half_size, output.size() - window_half_size - 1));

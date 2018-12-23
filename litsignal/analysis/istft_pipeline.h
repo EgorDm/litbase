@@ -20,7 +20,7 @@ namespace litsignal { namespace analysis {
     class ISTFTPipeline : public AlgorthmPipelineInterface<cx_mat, cx_vec, vec, IFFTContext> {
     private:
         int hop_size;
-        vec window_sq;
+        vec window_inv;
 
         NodeWindowVec node_window;
         NodeIFFT node_ifft;

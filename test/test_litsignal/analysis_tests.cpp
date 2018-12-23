@@ -39,7 +39,9 @@ TEST_F(LitSignalAnalysisTests, SFFT_Performace_Test) {
     int hop_size = window_size / 2;
     int sample_rate = signal.getSampleRate();
     vec window = window::hanning(window_size);
+    std::cout << window.t() << std::endl;
     vec X = signal.get_data_vec().col(0);
+
 
     clock_t begin = clock();
 

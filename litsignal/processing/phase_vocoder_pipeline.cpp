@@ -91,7 +91,6 @@ void PhaseVocoderPipeline::processFrame(PhaseVocoderContext &context, cx_vec &fr
 
 void PhaseVocoderPipeline::postProcess() {
     output = analysis::calculate_istft(Sy, window, syn_hop_size);
-    output /= max(output);
 }
 
 PhaseVocoderContext PhaseVocoderPipeline::createContext(cx_vec &frame) {
