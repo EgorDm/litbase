@@ -10,15 +10,12 @@
 #include "../litsignal_constants.h"
 
 namespace litsignal { namespace algorithm {
-    struct FFTContext {
-        arma::cx_vec fft;
+    struct FFTContext : public AlgorithmContext<arma::cx_vec> {
         fftw_plan plan = nullptr;
 
-        explicit FFTContext(int size) {
-            fft.set_size(ACU(size));
-            auto *out = reinterpret_cast<fftw_complex *>(fft.memptr());
-            plan = fftw_plan_dft_r2c_1d(static_cast<int>(fft.size()), nullptr, out, FFTW_ESTIMATE);
-        }
+        explicit FFTContext(int size)
+                : ContextType(arma::cx_vec(ACU(size))),
+                  plan(fftw_plan_dft_r2c_1d(static_cast<int>(output.size()), nullptr, nullptr, FFTW_ESTIMATE)) {}
 
         virtual ~FFTContext() {
             if (plan != nullptr) fftw_destroy_plan(plan);
@@ -26,7 +23,7 @@ namespace litsignal { namespace algorithm {
         }
     };
 
-    class NodeFFT : public AlgorithmNodeInterface<FFTContext, void, arma::vec> {
+    class NodeFFT : public AlgorithmNodeInterface<FFTContext, arma::vec> {
     public:
         bool mirror;
 
@@ -34,16 +31,17 @@ namespace litsignal { namespace algorithm {
 
         void apply(arma::vec &frame, FFTContext *context) override {
             auto *in = frame.memptr();
-            auto *out = reinterpret_cast<fftw_complex *>(context->fft.memptr());
+            auto *out = reinterpret_cast<fftw_complex *>(context->getOutput().memptr());
             fftw_execute_dft_r2c(context->plan, in, out);
 
             // Mirror the results since fft is symmetric
-            if(mirror) {
-                int N = static_cast<int>(context->fft.size());
+            if (mirror) {
+                arma::cx_vec &output = context->getOutput();
+                int N = static_cast<int>(context->getOutput().size());
                 int offset = static_cast<int>(ceil(N / 2.));
                 int n_elem = N - offset;
                 for (int i = 0; i < n_elem; ++i) {
-                    context->fft(ACU(offset + i)) = std::conj(context->fft(ACU(n_elem - i)));
+                    output(ACU(offset + i)) = std::conj(output(ACU(n_elem - i)));
                 }
             }
         }

@@ -11,14 +11,15 @@
 
 
 namespace litsignal { namespace algorithm {
-class NodeWindowVec : public AlgorithmNodeInterface<void, void, arma::vec> {
+    template<typename T>
+    class NodeWindowVec : public AlgorithmNodeInterface<void, arma::Col<T>> {
     protected:
-    arma::vec window;
+        arma::Col<T> window;
 
     public:
-        NodeWindowVec(arma::vec window) : window(std::move(window)) {}
+        explicit NodeWindowVec(arma::Col<T> window) : window(std::move(window)) {}
 
-        void apply(arma::vec &frame, void *context) override {
+        void apply(arma::Col<T> &frame, void *context) override {
             frame %= window;
         }
 

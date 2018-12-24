@@ -7,19 +7,21 @@
 #include "algorithm_interface.h"
 
 namespace litsignal { namespace algorithm {
-    template<typename F, typename C, typename A>
-    class AlgorithmSimpleRunner : public AlgorithmRunnerInterface<F, C, A> {
+    template<typename P>
+    class AlgorithmSimpleRunner : public AlgorithmRunnerInterface<P> {
     public:
-        void run(A *algorithm) override {
-            F frame = algorithm->getFrameFactory()->create();
-            C context = algorithm->createContext(frame);
+        void run(P *pipeline) override {
+            auto algorithm = pipeline->getAlgorithm();
+            auto frame = pipeline->getFrameFactory()->create();
+            auto context = algorithm->createContext(frame);
 
             algorithm->preProcess();
 
-            int frameCount = algorithm->getFrameFactory()->getFrameCount(algorithm->getInput());
+            int frameCount = pipeline->getFrameFactory()->getFrameCount();
             for (int i = 0; i < frameCount; ++i) {
-                algorithm->getFrameFactory()->fill(algorithm->getInput(), frame, i);
+                pipeline->getFrameFactory()->fill(frame, i);
                 algorithm->processFrame(context, frame, i);
+                pipeline->getOutputBuilder()->fill(&context, i);
             }
 
             algorithm->postProcess();

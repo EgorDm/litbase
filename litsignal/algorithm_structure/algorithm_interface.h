@@ -5,53 +5,70 @@
 #pragma once
 
 namespace litsignal { namespace algorithm {
-    template<typename I, typename F>
-    class FrameFactoryInterface {
-    public:
-        virtual F create() = 0;
-
-        virtual void fill(const I &input, F &frame, int i) = 0;
-
-        virtual int getFrameCount(const I &input) = 0;
-    };
-
-    template<typename C, typename O, typename I>
-    class AlgorithmNodeInterface {
-    public:
-        virtual O apply(I &frame, C *context) = 0;
-    };
-
-    template<typename F, typename C, typename A>
+    template<typename P>
     class AlgorithmRunnerInterface {
     public:
-        virtual void run(A *algorithm) = 0;
+        virtual void run(P *pipeline) = 0;
     };
 
-    template<typename I, typename F, typename O, typename C>
-    class AlgorthmPipelineInterface {
+    template<typename SO>
+    class AlgorithmContext {
     protected:
-        using OwnType = AlgorthmPipelineInterface<I, F, O, C>;
-        using RunnerType = AlgorithmRunnerInterface<F, C, AlgorthmPipelineInterface<I, F, O, C>>;
-        using FrameFactoryType = FrameFactoryInterface<I, F>;
-
-        const I &input;
-        O &output;
-        RunnerType *runner = nullptr;
-        FrameFactoryType *frame_factory = nullptr;
+        SO output;
 
     public:
-        AlgorthmPipelineInterface(const I &input, O &output, RunnerType *runner, FrameFactoryType *frame_factory)
-                : input(input), output(output), runner(runner), frame_factory(frame_factory) {}
+        using ContextType = AlgorithmContext<SO>;
 
-        virtual ~AlgorthmPipelineInterface() {
-            if (runner != nullptr) delete runner;
-            if (frame_factory != nullptr) delete frame_factory;
+        explicit AlgorithmContext(const SO &output) : output(output) {}
+
+        SO &getOutput() {
+            return output;
         }
+    };
 
-        void process() {
-            runner->run(this);
+    template<typename I, typename F>
+    class FrameFactoryInterface {
+    protected:
+        const I &input;
+
+    public:
+        explicit FrameFactoryInterface(const I &input) : input(input) {}
+
+        virtual F create() = 0;
+
+        virtual void fill(F &frame, int i) = 0;
+
+        virtual int getFrameCount() = 0;
+    };
+
+    template<typename O, typename OF>
+    class AlgorithmOutputBuilder {
+    protected:
+        O output;
+
+    public:
+        explicit AlgorithmOutputBuilder(const O &output) : output(output) {}
+
+        virtual void fill(AlgorithmContext<OF> *context, int i) = 0;
+
+        virtual void resize(int capacity) = 0;
+
+        virtual bool is_full() = 0;
+
+        O &getOutput() {
+            return output;
         }
+    };
 
+    template<typename C, typename I>
+    class AlgorithmNodeInterface {
+    public:
+        virtual void apply(I &frame, C *context) = 0;
+    };
+
+    template<typename F, typename C>
+    class AlgorithmInterface {
+    public:
         virtual void preProcess() {};
 
         virtual void processFrame(C &context, F &frame, int i) = 0;
@@ -59,17 +76,39 @@ namespace litsignal { namespace algorithm {
         virtual void postProcess() {};
 
         virtual C createContext(F &frame) = 0;
+    };
 
-        FrameFactoryType *getFrameFactory() const {
+    template<typename I, typename F, typename OF, typename O, typename C, typename A>
+    class AlgorithmPipeline {
+    public:
+        using FrameFactoryType = FrameFactoryInterface<I, F>;
+        using OutputBuilderType = AlgorithmOutputBuilder<O, OF>;
+        using AlgorithmType = AlgorithmInterface<F, C>;
+
+    protected:
+        FrameFactoryType *frame_factory = nullptr;
+        OutputBuilderType *output_builder = nullptr;
+        A algorithm;
+
+    public:
+        AlgorithmPipeline(FrameFactoryType *frame_factory, OutputBuilderType *output_builder, A algorithm)
+                : frame_factory(frame_factory), output_builder(output_builder), algorithm(algorithm) {}
+
+        virtual ~AlgorithmPipeline() {
+            if (frame_factory != nullptr) delete frame_factory;
+            if (output_builder != nullptr) delete output_builder;
+        }
+
+        FrameFactoryType *getFrameFactory() {
             return frame_factory;
         }
 
-        const I &getInput() const {
-            return input;
+        OutputBuilderType *getOutputBuilder() {
+            return output_builder;
         }
 
-        O &getOutput() const {
-            return output;
+        AlgorithmType *getAlgorithm() {
+            return &algorithm;
         }
     };
 }}

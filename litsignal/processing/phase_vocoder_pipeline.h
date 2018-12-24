@@ -10,6 +10,7 @@
 
 using namespace arma;
 using namespace litsignal::algorithm;
+/*
 
 namespace litsignal { namespace processing {
     vec calculate_phase_vocoder(const vec &input_signal, int sr, float alpha = 0.5f, int window_size = 2048,
@@ -60,3 +61,4 @@ namespace litsignal { namespace processing {
         PhaseVocoderContext createContext(cx_vec &frame) override;
     };
 }}
+*/

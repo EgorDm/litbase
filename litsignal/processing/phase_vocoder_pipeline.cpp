@@ -7,9 +7,8 @@
 #include "../litsignal_constants.h"
 #include "../utils/window_utils.h"
 #include "../utils/frame_utils.h"
-#include "../analysis/stft_pipeline.h"
 #include "../algorithm_structure/frame_factory_vec.h"
-#include "../analysis/istft_pipeline.h"
+/*
 
 using namespace litsignal::processing;
 using namespace litsignal;
@@ -96,3 +95,4 @@ void PhaseVocoderPipeline::postProcess() {
 PhaseVocoderContext PhaseVocoderPipeline::createContext(cx_vec &frame) {
     return PhaseVocoderContext(window.size());
 }
+*/

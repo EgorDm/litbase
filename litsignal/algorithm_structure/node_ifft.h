@@ -10,11 +10,10 @@
 #include "algorithm_interface.h"
 
 namespace litsignal { namespace algorithm {
-    struct IFFTContext {
-        arma::vec ifft;
+    struct IFFTContext : AlgorithmContext<arma::vec> {
         fftw_plan plan = nullptr;
 
-        explicit IFFTContext(int size) : ifft(ACU(size)) {
+        explicit IFFTContext(int size) : ContextType(ACU(size)) {
             plan = fftw_plan_dft_c2r_1d(static_cast<int>(ifft.size()), nullptr, ifft.memptr(), FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
         }
 
