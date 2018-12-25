@@ -87,5 +87,4 @@ namespace litsignal { namespace analysis {
         runner.run(&pipeline);
         return pipeline.getOutputBuilder()->getOutput();
     }
-
 }}

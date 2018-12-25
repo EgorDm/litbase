@@ -12,6 +12,7 @@
 #include <processing/phase_vocoder_pipeline.h>
 #include <audiofile/simplified.h>
 #include <analysis/stft_algorithm.h>
+#include <analysis/istft_algorithm.h>
 
 using namespace litsignal::structures;
 using namespace litsignal::analysis;
@@ -66,14 +67,17 @@ TEST_F(LitSignalAnalysisTests, SFFT_Correctness_Test) {
     int window_size = sample_rate;
     int hop_size = window_size / 2;
     vec window = window::hanning(window_size);
+    //vec window = vec(window_size, fill::ones);
     vec X = cosine;
 
     cx_mat S = calculate_stft(X, feature_rate, t, f, sample_rate, window, hop_size);
+    S = S(span::all, span(1, S.n_cols - 2));
     //vec O = calculate_istft(S, window, hop_size);
+    //std::cout << O.t() << std::endl;
 
     mat Sa = abs(S);
+    //std::cout << Sa << std::endl;
 
-    std::cout << Sa << std::endl;
     ASSERT_DOUBLE_EQ(mean(Sa(Sa.n_rows - 1, span(1, S.n_cols - 2))), sum(window)); // Remove first and last cols
     ASSERT_TRUE(compare_vec(f, regspace(0, sample_rate/2)));
     vec tcomp =regspace<vec>(0, Sa.n_cols - 1) * (window_size / 2 / (double) sample_rate);

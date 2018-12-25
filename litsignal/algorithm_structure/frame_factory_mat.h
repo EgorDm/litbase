@@ -13,19 +13,22 @@ using namespace arma;
 namespace litsignal { namespace algorithm {
     template <typename T>
     class FrameFactoryMat : public FrameFactoryInterface<Mat<T>, Col<T>> {
+    private:
+        using ParentType = FrameFactoryInterface<Mat<T>, Col<T>>;
+
     public:
-        FrameFactoryMat() = default;
+        explicit FrameFactoryMat(const Mat<T> &input) : FrameFactoryInterface<Mat<T>, Col<T>>(input) {}
 
         Col<T> create() override {
             return Col<T>();
         }
 
-        void fill(const Mat<T> &input, Col<T> &frame, int i) override {
-            frame = input.col(i);
+        void fill(Col<T> &frame, int i) override {
+            frame = ParentType::input.col(i);
         }
 
-        int getFrameCount(const Mat<T> &input) override {
-            return ACI(input.n_cols);
+        int getFrameCount() override {
+            return ACI(ParentType::input.n_cols);
         }
     };
 }}

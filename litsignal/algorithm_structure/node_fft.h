@@ -13,9 +13,8 @@ namespace litsignal { namespace algorithm {
     struct FFTContext : public AlgorithmContext<arma::cx_vec> {
         fftw_plan plan = nullptr;
 
-        explicit FFTContext(int size)
-                : ContextType(arma::cx_vec(ACU(size))),
-                  plan(fftw_plan_dft_r2c_1d(static_cast<int>(output.size()), nullptr, nullptr, FFTW_ESTIMATE)) {}
+        explicit FFTContext(int size) : ContextType(arma::cx_vec(ACU(size))),
+                                        plan(fftw_plan_dft_r2c_1d(size, nullptr, nullptr, FFTW_ESTIMATE)) {}
 
         virtual ~FFTContext() {
             if (plan != nullptr) fftw_destroy_plan(plan);

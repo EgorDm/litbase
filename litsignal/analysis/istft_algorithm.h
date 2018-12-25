@@ -8,33 +8,61 @@
 #include <algorithm_structure/algorithm_interface.h>
 #include <algorithm_structure/node_ifft.h>
 #include <algorithm_structure/node_window_vec.h>
+#include <algorithm_structure/frame_factory_mat.h>
+#include <algorithm_structure/output_builder_vec.h>
+#include <processing/phase_vocoder_pipeline.h>
 
+using namespace arma;
 using namespace litsignal::algorithm;
 
 namespace litsignal { namespace analysis {
-    class STFTAlgorithm : public AlgorithmInterface<arma::cx_vec, IFFTContext> {
+
+
+    class ISTFTAlgorithm : public AlgorithmInterface<arma::cx_vec, IFFTContext> {
     protected:
         int hop_size;
-        arma::vec window_inv;
 
         NodeWindowVec<double> node_window;
         NodeIFFT node_ifft;
 
     public:
-        STFTAlgorithm(const arma::vec &window, int hop_size = -1)
-            : node_window(window), node_ifft(), hop_size(hop_size), window_inv(window) {
-            if(hop_size < 0) this->hop_size = ACI(window.size() / 2);
-            window_inv /= sqrt((window.size() / (double)hop_size) / 2.);
+        /**
+         * Warning: Applies the inverse of the window
+         * @param window
+         * @param hop_size
+         */
+        explicit ISTFTAlgorithm(const arma::vec &window, int hop_size = -1)
+                : node_window(window / sqrt((window.size() / (double) hop_size) / 2.)), // Take window inverse
+                  node_ifft(), hop_size(hop_size) {
+            if (hop_size < 0) this->hop_size = ACI(window.size() / 2);
         }
 
         void processFrame(IFFTContext &context, arma::cx_vec &frame, int i) override {
             node_ifft.apply(frame, &context);
             node_window.apply(context.getOutput(), &context);
-            context.getOutput() %= window_inv;
         }
 
         IFFTContext createContext(arma::cx_vec &frame) override {
             return IFFTContext(ACI(node_window.getWindowSize()));
         }
     };
+
+    using ISTFTPipeline = AlgorithmPipeline<cx_mat, cx_vec, vec, vec, IFFTContext, ISTFTAlgorithm>;
+
+    ISTFTPipeline build_istft_algorithm(const cx_mat &input, const vec &window, int hop_size) {
+        ISTFTAlgorithm algorithm(window, hop_size);
+        auto *frameFactory = new FrameFactoryMat<cx_double>(input);
+        auto *outputBuilder = new OutputBuilderVec<double>(hop_size);
+        int signal_length = (frameFactory->getFrameCount() - 1) * hop_size + ACI(window.size());
+        outputBuilder->resize(signal_length);
+
+        return ISTFTPipeline(frameFactory, outputBuilder, algorithm);
+    }
+
+    vec calculate_istft(const cx_mat &input, const vec &window, int hop_size) {
+        ISTFTPipeline pipeline = build_istft_algorithm(input, window, hop_size);
+        AlgorithmSimpleRunner<ISTFTPipeline> runner;
+        runner.run(&pipeline);
+        return pipeline.getOutputBuilder()->getOutput();
+    }
 }}
