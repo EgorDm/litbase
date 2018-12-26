@@ -21,7 +21,7 @@ namespace litsignal { namespace algorithm {
 
         explicit AlgorithmContext(const SO &output) : output(output) {}
 
-        SO &getOutput() {
+        virtual SO &getOutput() {
             return output;
         }
     };

@@ -10,6 +10,7 @@
 #include <utils/window_utils.h>
 #include "test_helpers.h"
 #include <processing/phase_vocoder_pipeline.h>
+#include <processing/phase_vocoder_algorithm.h>
 #include <audiofile/simplified.h>
 #include <analysis/stft_algorithm.h>
 #include <analysis/istft_algorithm.h>
@@ -85,12 +86,12 @@ TEST_F(LitSignalAnalysisTests, SFFT_Correctness_Test) {
 }
 
 TEST_F(LitSignalAnalysisTests, PhaseVocoder_Performance_Test) {
-    /*vec X = signal.get_data_vec().col(0);
+    vec X = signal.get_data_vec().col(0);
     int sample_rate = signal.getSampleRate();
 
     clock_t begin = clock();
 
-    auto newSignal = litsignal::processing::calculate_phase_vocoder(X, sample_rate, 1.8f);
+    auto newSignal = litsignal::processing::calculate_pv(X, sample_rate, 1.8f);
 
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
@@ -98,5 +99,5 @@ TEST_F(LitSignalAnalysisTests, PhaseVocoder_Performance_Test) {
 
     auto container = SignalContainer(newSignal, sample_rate);
     auto ret = litaudiofile::simplified::write_audio("data/output/dst_vocode.wav", &container);
-    if(!ret) std::cout << "FAIL!" << std::endl;*/
+    if(!ret) std::cout << "FAIL!" << std::endl;
 }

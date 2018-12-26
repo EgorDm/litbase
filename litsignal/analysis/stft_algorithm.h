@@ -24,19 +24,14 @@ namespace litsignal { namespace analysis {
 
     class STFTAlgorithm : public AlgorithmInterface<arma::vec, STFTContext> {
     protected:
-        int sr;
-        int hop_size;
-        int window_half_size;
         span coefficient_range;
 
         NodeWindowVec<double> node_window;
         NodeFFT node_fft;
 
     public:
-        STFTAlgorithm(int sr, const vec &window, int hop_size, const span &coefficient_range = span(0, 0),
-                      bool mirror = false)
-                : sr(sr), coefficient_range(coefficient_range), hop_size(hop_size), node_window(window),
-                  node_fft(mirror), window_half_size(ACI(window.size())) {
+        explicit STFTAlgorithm(const vec &window, const span &coefficient_range = span(0, 0), bool mirror = false)
+                : coefficient_range(coefficient_range), node_window(window), node_fft(mirror) {
             if (coefficient_range.a == coefficient_range.b) this->coefficient_range = span(0, window.size() / 2);
         }
 
@@ -50,15 +45,16 @@ namespace litsignal { namespace analysis {
             return STFTContext(getCoefficientCount(), ACI(frame.size()));
         }
 
-        int getFeatureRate() {
+        inline static int getFeatureRate(int sr, int hop_size) {
             return sr / hop_size;
         }
 
-        vec getTimeVec(int frame_count) {
+        inline static vec getTimeVec(int sr, int hop_size, int frame_count) {
             return regspace<vec>(0, frame_count - 1) * (hop_size / (double) sr);
         }
 
-        vec getFreqVec() {
+        inline static vec getFreqVec(int sr, int window_size, span coefficient_range) {
+            int window_half_size = window_size / 2;
             vec f = regspace<vec>(0, window_half_size) / window_half_size * (sr / 2.);
             return f(coefficient_range);
         }
@@ -70,9 +66,9 @@ namespace litsignal { namespace analysis {
 
     using STFTPipeline = AlgorithmPipeline<vec, vec, cx_vec, cx_mat, STFTContext, STFTAlgorithm>;
 
-    STFTPipeline build_stft_algorithm(const vec &input, int sr, const vec &window, int hop_size,
+    STFTPipeline build_stft_algorithm(const vec &input, const vec &window, int hop_size,
                                       const span &coefficient_range = span(0, 0), bool mirror = false) {
-        STFTAlgorithm algorithm(sr, window, hop_size, coefficient_range, mirror);
+        STFTAlgorithm algorithm(window, coefficient_range, mirror);
         auto *frameFactory = new FrameFactoryVec<double>(input, ACI(window.size()), hop_size);
         auto *outputBuilder = new OutputBuilderMat<cx_double>(algorithm.getCoefficientCount());
         outputBuilder->resize(frameFactory->getFrameCount());
@@ -82,7 +78,7 @@ namespace litsignal { namespace analysis {
 
     cx_mat calculate_stft(const vec &input, int &feature_rate, vec &t, vec &f, int sr, const vec &window, int hop_size,
                           const span &coefficient_range = span(0, 0), bool mirror = false) {
-        STFTPipeline pipeline = build_stft_algorithm(input, sr, window, hop_size, coefficient_range, mirror);
+        STFTPipeline pipeline = build_stft_algorithm(input, window, hop_size, coefficient_range, mirror);
         AlgorithmSimpleRunner<STFTPipeline> runner;
         runner.run(&pipeline);
         return pipeline.getOutputBuilder()->getOutput();

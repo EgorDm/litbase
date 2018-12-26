@@ -22,7 +22,7 @@ namespace litsignal { namespace algorithm {
         OutputBuilderVec(int hop_size) : ParentType(arma::Col<T>()), hop_size(hop_size) {}
 
         void fill(AlgorithmContext<arma::Col<T>> *context, int i) override {
-            ParentType::getOutput()(arma::span(cursor, cursor + context->getOutput().size() - 1)) = context->getOutput();
+            ParentType::getOutput()(arma::span(cursor, cursor + context->getOutput().size() - 1)) += context->getOutput();
             cursor += hop_size;
         }
 

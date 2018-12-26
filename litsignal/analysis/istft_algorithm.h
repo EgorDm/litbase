@@ -16,12 +16,8 @@ using namespace arma;
 using namespace litsignal::algorithm;
 
 namespace litsignal { namespace analysis {
-
-
     class ISTFTAlgorithm : public AlgorithmInterface<arma::cx_vec, IFFTContext> {
     protected:
-        int hop_size;
-
         NodeWindowVec<double> node_window;
         NodeIFFT node_ifft;
 
@@ -31,11 +27,9 @@ namespace litsignal { namespace analysis {
          * @param window
          * @param hop_size
          */
-        explicit ISTFTAlgorithm(const arma::vec &window, int hop_size = -1)
-                : node_window(window / sqrt((window.size() / (double) hop_size) / 2.)), // Take window inverse
-                  node_ifft(), hop_size(hop_size) {
-            if (hop_size < 0) this->hop_size = ACI(window.size() / 2);
-        }
+        explicit ISTFTAlgorithm(const arma::vec &window, int hop_size)
+                : node_ifft(),
+                  node_window(window / sqrt((window.size() / (double) hop_size) / 2.)) {} // Take window inverse
 
         void processFrame(IFFTContext &context, arma::cx_vec &frame, int i) override {
             node_ifft.apply(frame, &context);
