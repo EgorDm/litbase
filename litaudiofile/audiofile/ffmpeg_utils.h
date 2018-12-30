@@ -16,7 +16,7 @@ extern "C" {
 #define av_err2str(errnum) \
     av_make_error_string((char*)__builtin_alloca(AV_ERROR_MAX_STRING_SIZE), AV_ERROR_MAX_STRING_SIZE, errnum)
 
-using namespace litcore::utils;
+using namespace litcore;
 
 namespace litaudiofile { namespace ffmpeg_utils {
     inline bool supports_sample_fmt(AVCodec *codec, enum AVSampleFormat sample_fmt) {

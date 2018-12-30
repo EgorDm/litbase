@@ -18,7 +18,7 @@ extern "C" {
 
 #define AudioReader_TAG "AudioReader"
 
-using namespace litcore::utils;
+using namespace litcore;
 using namespace litaudiofile;
 
 namespace litaudiofile {
@@ -37,7 +37,7 @@ namespace litaudiofile {
 
 
     private:
-        structures::AudioContainer<uint8_t> *tmp = nullptr;
+        std::unique_ptr<structures::AudioContainer<uint8_t>> tmp = nullptr;
         structures::AudioContainerInterface *dst;
         std::string path;
 
@@ -60,7 +60,6 @@ namespace litaudiofile {
             avcodec_close(codec_context);
             avcodec_free_context(&codec_context);
             avformat_close_input(&format_context);
-            if(tmp != nullptr) delete tmp;
         }
 
         bool read();

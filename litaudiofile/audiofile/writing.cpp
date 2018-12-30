@@ -6,7 +6,7 @@
 #include "writing.h"
 #include "conversion.h"
 
-using namespace litcore::utils;
+using namespace litcore;
 using namespace litaudiofile;
 
 bool AudioWriter::write() {

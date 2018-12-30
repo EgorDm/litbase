@@ -12,7 +12,7 @@
 
 #endif
 
-void litcore::utils::debug::log(const std::string &tag, const std::string &message, ...) {
+void litcore::debug::log(const std::string &tag, const std::string &message, ...) {
 #ifdef DEBUG
 #if WINDOWS || LINUX
     std::cout << '[' << tag << "] " << message << std::endl;
@@ -22,7 +22,7 @@ void litcore::utils::debug::log(const std::string &tag, const std::string &messa
 #endif
 }
 
-void litcore::utils::debug::log_error(const std::string &tag, const std::string &message, ...) {
+void litcore::debug::log_error(const std::string &tag, const std::string &message, ...) {
 #ifdef DEBUG
 #if WINDOWS || LINUX
     std::cerr << '[' << tag << "] " << message << std::endl;

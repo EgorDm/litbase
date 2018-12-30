@@ -2,8 +2,6 @@
 // Created by egordm on 11-11-2018.
 //
 
-#pragma once
-
 #include "reading.h"
 
 using namespace litaudiofile;
@@ -14,10 +12,10 @@ bool litaudiofile::AudioReader::read() {
 
     if(!read_file()) return false;
 
-    dst->copyUnfilledFormat(tmp);
+    dst->copyUnfilledFormat(tmp.get());
     dst->clear();
 
-    processing::AudioConverter converter(tmp, dst);
+    processing::AudioConverter converter(tmp.get(), dst);
     return converter.convert();
 }
 
@@ -74,7 +72,8 @@ bool AudioReader::open_file() {
     codec_context->request_sample_fmt = tmp_format;
 
     // Create the temporary audio container
-    tmp = new structures::AudioContainer<uint8_t>(tmp_format, codec_context->channels, codec_context->sample_rate);
+    tmp = std::make_unique<structures::AudioContainer<uint8_t>>(tmp_format, codec_context->channels, codec_context->sample_rate);
+    reading_planar = av_sample_fmt_is_planar(tmp_format);
 
     if ((error = avcodec_open2(codec_context, codec, nullptr)) < 0) {
         ffmpeg_utils::log_error(AudioReader_TAG, "Couldn't open the context with the decoder.", error);

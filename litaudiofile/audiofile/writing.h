@@ -14,7 +14,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-using namespace litcore::utils;
+using namespace litcore;
 using namespace litaudiofile;
 using namespace litaudio;
 

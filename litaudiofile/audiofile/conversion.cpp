@@ -16,13 +16,13 @@ bool AudioConverter::convert() {
     if(src->isSameFormat(dst)) {
         dst->setSampleCount(src->getSampleCount());
         if(src->isPlanar()) {
-            int copy_byte_count = src->getSampleCount() * src->getSampleByteSize() * src->getChannelCount();
-            std::memcpy (dst->getByteData(), src->getByteData(), copy_byte_count);
-        } else {
             for (int c = 0; c < src->getChannelCount(); ++c) {
                 int copy_byte_count = src->getSampleCount() * src->getSampleByteSize();
                 std::memcpy (dst->getByteData(c), src->getByteData(c), copy_byte_count);
             }
+        } else {
+            int copy_byte_count = src->getSampleCount() * src->getSampleByteSize() * src->getChannelCount();
+            std::memcpy (dst->getByteData(), src->getByteData(), copy_byte_count);
         }
 
         return true;

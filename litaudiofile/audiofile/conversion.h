@@ -13,7 +13,7 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
-using namespace litcore::utils;
+using namespace litcore;
 using namespace litaudio;
 
 #define AudioConverter_TAG "AudioConverter"
