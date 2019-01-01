@@ -35,9 +35,8 @@ namespace litaudiofile {
         bool reading_planar = false;
         int sample_byte_size = 0;
 
-
     private:
-        std::unique_ptr<structures::AudioContainer<uint8_t>> tmp = nullptr;
+        std::shared_ptr<structures::AudioContainer<uint8_t>> tmp = nullptr;
         structures::AudioContainerInterface *dst;
         std::string path;
 

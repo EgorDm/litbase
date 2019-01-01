@@ -72,7 +72,7 @@ bool AudioReader::open_file() {
     codec_context->request_sample_fmt = tmp_format;
 
     // Create the temporary audio container
-    tmp = std::make_unique<structures::AudioContainer<uint8_t>>(tmp_format, codec_context->channels, codec_context->sample_rate);
+    tmp = std::make_shared<structures::AudioContainer<uint8_t>>(tmp_format, codec_context->channels, codec_context->sample_rate);
     reading_planar = av_sample_fmt_is_planar(tmp_format);
 
     if ((error = avcodec_open2(codec_context, codec, nullptr)) < 0) {

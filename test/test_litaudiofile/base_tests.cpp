@@ -6,6 +6,7 @@
 #include <gmock/gmock.h>
 #include <audiofile/writing.h>
 #include <audiofile/reading.h>
+#include <audiofile/tag_reader.h>
 
 using namespace litaudiofile;
 using namespace litaudio::structures;
@@ -27,6 +28,21 @@ TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
     auto writer = AudioWriter(dst, "data/output/dst.mp3");
     ASSERT_TRUE(writer.write());
 
+}
+
+TEST_F(LitAudioFileBaseTests, ReadTag_Test) {
+    TagReader reader("data/test.flac");
+    auto tags = reader.getTags();
+
+    std::string artist(tags->artist().toCString());
+    std::string title(tags->title().toCString());
+    std::string album(tags->album().toCString());
+
+    std::cout << artist << std::endl << title << std::endl << album << std::endl;
+
+    ASSERT_TRUE(artist.compare("Test1") == 0);
+    ASSERT_TRUE(title.compare("Test2") == 0);
+    ASSERT_TRUE(album.compare("Test3") == 0);
 }
 
 int main(int argc, char** argv) {
