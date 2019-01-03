@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../litsignal_constants.h"
+
 namespace litsignal { namespace algorithm {
     template<typename P>
     class AlgorithmRunnerInterface {
@@ -58,6 +60,8 @@ namespace litsignal { namespace algorithm {
         O &getOutput() {
             return output;
         }
+
+        virtual void reset() {};
     };
 
     template<typename C, typename I>

@@ -9,7 +9,6 @@
 #include <utils/pulse_utils.h>
 #include <utils/window_utils.h>
 #include "test_helpers.h"
-#include <processing/phase_vocoder_pipeline.h>
 #include <processing/phase_vocoder_algorithm.h>
 #include <audiofile/simplified.h>
 #include <analysis/stft_algorithm.h>

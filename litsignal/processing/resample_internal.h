@@ -10,7 +10,6 @@
 #include <structures/typed_audio_container_interface.h>
 
 using namespace arma;
-using namespace litcore::utils;
 using namespace litcore;
 
 using namespace litaudio::structures;

@@ -7,7 +7,7 @@
 #include "resample_internal.h"
 #include "../utils/mat_utils.h"
 
-using namespace litcore::utils;
+using namespace litcore;
 using namespace litsignal::processing;
 
 SignalResampler::SignalResampler(SignalContainer *input, SignalContainer *output) : input(input), output(output) {}

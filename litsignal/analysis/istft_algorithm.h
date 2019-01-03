@@ -10,7 +10,6 @@
 #include <algorithm_structure/node_window_vec.h>
 #include <algorithm_structure/frame_factory_mat.h>
 #include <algorithm_structure/output_builder_vec.h>
-#include <processing/phase_vocoder_pipeline.h>
 
 using namespace arma;
 using namespace litsignal::algorithm;

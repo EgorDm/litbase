@@ -55,19 +55,28 @@ namespace litsignal { namespace algorithm {
         }
 
         virtual int getPos(int i) {
-            return -frame_half_size + i * hop_size;
+            return  i * hop_size - frame_half_size;
         }
 
         int getFrameCount() override {
-            return static_cast<int>(std::ceil(ParentType::input.size() / (float) hop_size)) + 1;
+            return static_cast<int>(std::round((ParentType::input.size() + frame_size) / (float) hop_size));
         }
 
         int getFrameSize() const {
             return frame_size;
         }
 
+        void setFrameSize(int frame_size) {
+            FrameFactoryVec::frame_size = frame_size;
+            FrameFactoryVec::frame_half_size = frame_size / 2;
+        }
+
         virtual int getHopSize() const {
             return hop_size;
+        }
+
+        void setHopSize(int hop_size) {
+            FrameFactoryVec::hop_size = hop_size;
         }
     };
 

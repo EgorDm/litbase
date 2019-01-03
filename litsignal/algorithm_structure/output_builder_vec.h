@@ -34,6 +34,10 @@ namespace litsignal { namespace algorithm {
         bool is_full() override {
             return cursor >= ParentType::getOutput().size();
         }
+
+        void reset() override {
+            cursor = 0;
+        }
     };
 }};
 
