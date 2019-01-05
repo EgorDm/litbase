@@ -47,6 +47,7 @@ namespace litsignal { namespace algorithm {
     class AlgorithmOutputBuilder {
     protected:
         O output;
+        int cursor = 0;
 
     public:
         explicit AlgorithmOutputBuilder(const O &output) : output(output) {}
@@ -55,13 +56,19 @@ namespace litsignal { namespace algorithm {
 
         virtual void resize(int capacity) = 0;
 
-        virtual bool is_full() = 0;
+        virtual int getSize() = 0;
+
+        virtual int getCursor() {
+            return cursor;
+        }
 
         O &getOutput() {
             return output;
         }
 
-        virtual void reset() {};
+        virtual void reset() {
+            cursor = 0;
+        };
     };
 
     template<typename C, typename I>

@@ -10,33 +10,26 @@
 
 namespace litsignal { namespace algorithm {
     template<typename T>
-    class OutputBuilderMat : public AlgorithmOutputBuilder<arma::Mat<T>, arma::Col<T>> {
+    class OutputBuilderColMat : public AlgorithmOutputBuilder<arma::Mat<T>, arma::Col<T>> {
     private:
         using ParentType = AlgorithmOutputBuilder<arma::Mat<T>, arma::Col<T>>;
 
     protected:
         int frame_size;
-        int cursor = 0;
 
     public:
-        explicit OutputBuilderMat(int frame_size)
-                : ParentType(arma::Mat<T>()), frame_size(frame_size) {}
-
+        explicit OutputBuilderColMat(int frame_size) : ParentType(arma::Mat<T>()), frame_size(frame_size) {}
 
         void fill(AlgorithmContext<arma::Col<T>> *context, int i) override {
-            ParentType::output(arma::span::all, cursor++) = context->getOutput();
+            ParentType::output(arma::span::all, ParentType::cursor++) = context->getOutput();
         }
 
         void resize(int capacity) override {
             ParentType::output.set_size(ACU(frame_size), ACU(capacity));
         }
 
-        bool is_full() override {
-            return cursor >= ParentType::output.n_cols;
-        }
-
-        void reset() override {
-            cursor = 0;
+        int getSize() override {
+            return ACI(ParentType::output.n_cols);
         }
     };
 }};

@@ -8,7 +8,7 @@
 #include <algorithm_structure/node_fft.h>
 #include <algorithm_structure/node_window_vec.h>
 #include <algorithm_structure/frame_factory_vec.h>
-#include <algorithm_structure/output_builder_mat.h>
+#include <algorithm_structure/output_builder_col_mat.h>
 #include <algorithm_structure/algorithm_simple_runner.h>
 
 using namespace arma;
@@ -70,7 +70,7 @@ namespace litsignal { namespace analysis {
                                       const span &coefficient_range = span(0, 0), bool mirror = false) {
         STFTAlgorithm algorithm(window, coefficient_range, mirror);
         auto *frameFactory = new FrameFactoryVec<double>(input, ACI(window.size()), hop_size);
-        auto *outputBuilder = new OutputBuilderMat<cx_double>(algorithm.getCoefficientCount());
+        auto *outputBuilder = new OutputBuilderColMat<cx_double>(algorithm.getCoefficientCount());
         outputBuilder->resize(frameFactory->getFrameCount());
 
         return STFTPipeline(frameFactory, outputBuilder, algorithm);

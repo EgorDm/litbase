@@ -15,15 +15,14 @@ namespace litsignal { namespace algorithm {
         using ParentType = AlgorithmOutputBuilder<arma::Col<T>, arma::Col<T>>;
 
     protected:
-        int cursor = 0;
         int hop_size = 0;
 
     public:
-        OutputBuilderVec(int hop_size) : ParentType(arma::Col<T>()), hop_size(hop_size) {}
+        explicit OutputBuilderVec(int hop_size) : ParentType(arma::Col<T>()), hop_size(hop_size) {}
 
         void fill(AlgorithmContext<arma::Col<T>> *context, int i) override {
-            ParentType::getOutput()(arma::span(cursor, cursor + context->getOutput().size() - 1)) += context->getOutput();
-            cursor += hop_size;
+            ParentType::getOutput()(arma::span(ParentType::cursor, ParentType::cursor + context->getOutput().size() - 1)) += context->getOutput();
+            ParentType::cursor += hop_size;
         }
 
         void resize(int capacity) override {
@@ -31,12 +30,8 @@ namespace litsignal { namespace algorithm {
 
         }
 
-        bool is_full() override {
-            return cursor >= ParentType::getOutput().size();
-        }
-
-        void reset() override {
-            cursor = 0;
+        int getSize() override {
+            return ACI(ParentType::getOutput().size());
         }
     };
 }};

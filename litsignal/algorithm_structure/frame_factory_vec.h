@@ -79,27 +79,4 @@ namespace litsignal { namespace algorithm {
             FrameFactoryVec::hop_size = hop_size;
         }
     };
-
-    template<typename T>
-    class FrameFactoryVecP : public FrameFactoryVec<T> {
-    private:
-        uvec hop_positions;
-
-    public:
-        FrameFactoryVecP(int frame_size, uvec hop_positions)
-                : FrameFactoryVec<T>(frame_size, 0), hop_positions(std::move(hop_positions)) {}
-
-        int getFrameCount(const Col<T> &input) override {
-            return ACI(hop_positions.size());
-        }
-
-        int getHopSize() const override {
-            return hop_positions.size() < 2 ? 0 : ACI(hop_positions[1] - hop_positions[0]);
-        }
-
-    protected:
-        int getPos(int i) override {
-            return ACI(hop_positions[i]);
-        }
-    };
 }}
