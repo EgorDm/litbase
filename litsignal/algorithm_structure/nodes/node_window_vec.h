@@ -7,7 +7,7 @@
 #pragma once
 
 #include <armadillo>
-#include "algorithm_interface.h"
+#include "algorithm_structure/algorithm_interface.h"
 
 
 namespace litsignal { namespace algorithm {

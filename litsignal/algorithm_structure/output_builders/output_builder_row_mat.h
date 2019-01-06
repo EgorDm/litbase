@@ -6,7 +6,7 @@
 
 #include <armadillo>
 #include <litsignal_constants.h>
-#include "algorithm_interface.h"
+#include "algorithm_structure/algorithm_interface.h"
 
 namespace litsignal { namespace algorithm {
     template<typename T>

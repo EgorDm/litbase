@@ -6,7 +6,7 @@
 
 #include <armadillo>
 #include <algorithm_structure/algorithm_interface.h>
-#include <algorithm_structure/node_fft.h>
+#include <algorithm_structure/nodes/node_fft.h>
 #include <analysis/stft_algorithm.h>
 #include <analysis/istft_algorithm.h>
 #include <utils/window_utils.h>

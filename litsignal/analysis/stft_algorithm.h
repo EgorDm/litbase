@@ -5,11 +5,11 @@
 #pragma once
 
 #include <armadillo_bits/typedef_mat.hpp>
-#include <algorithm_structure/node_fft.h>
-#include <algorithm_structure/node_window_vec.h>
-#include <algorithm_structure/frame_factory_vec.h>
-#include <algorithm_structure/output_builder_col_mat.h>
-#include <algorithm_structure/algorithm_simple_runner.h>
+#include <algorithm_structure/nodes/node_fft.h>
+#include <algorithm_structure/nodes/node_window_vec.h>
+#include <algorithm_structure/frame_factories/frame_factory_vec.h>
+#include <algorithm_structure/output_builders/output_builder_col_mat.h>
+#include <algorithm_structure/runners/algorithm_simple_runner.h>
 
 using namespace arma;
 using namespace litsignal::algorithm;
@@ -64,7 +64,7 @@ namespace litsignal { namespace analysis {
         }
     };
 
-    using STFTPipeline = AlgorithmPipeline<vec, vec, cx_vec, cx_mat, STFTContext, STFTAlgorithm>;
+    using STFTPipeline = AlgorithmPipeline<vec, cx_vec, cx_mat, STFTContext, STFTAlgorithm>;
 
     STFTPipeline build_stft_algorithm(const vec &input, const vec &window, int hop_size,
                                       const span &coefficient_range = span(0, 0), bool mirror = false) {

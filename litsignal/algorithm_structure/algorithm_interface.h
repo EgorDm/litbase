@@ -28,19 +28,16 @@ namespace litsignal { namespace algorithm {
         }
     };
 
-    template<typename I, typename F>
+    template<typename F>
     class FrameFactoryInterface {
-    protected:
-        const I &input;
-
     public:
-        explicit FrameFactoryInterface(const I &input) : input(input) {}
-
         virtual F create() = 0;
 
         virtual void fill(F &frame, int i) = 0;
 
         virtual int getFrameCount() = 0;
+
+        virtual int getInputSize() = 0;
     };
 
     template<typename O, typename OF>
@@ -89,10 +86,10 @@ namespace litsignal { namespace algorithm {
         virtual C createContext(F &frame) = 0;
     };
 
-    template<typename I, typename F, typename OF, typename O, typename C, typename A>
+    template<typename F, typename OF, typename O, typename C, typename A>
     class AlgorithmPipeline {
     public:
-        using FrameFactoryType = FrameFactoryInterface<I, F>;
+        using FrameFactoryType = FrameFactoryInterface<F>;
         using OutputBuilderType = AlgorithmOutputBuilder<O, OF>;
         using AlgorithmType = AlgorithmInterface<F, C>;
 
@@ -114,8 +111,16 @@ namespace litsignal { namespace algorithm {
             return frame_factory;
         }
 
+        void setFrameFactory(FrameFactoryType *frame_factory) {
+            AlgorithmPipeline::frame_factory = frame_factory;
+        }
+
         OutputBuilderType *getOutputBuilder() {
             return output_builder;
+        }
+
+        void setOutputBuilder(OutputBuilderType *output_builder) {
+            AlgorithmPipeline::output_builder = output_builder;
         }
 
         AlgorithmType *getAlgorithm() {

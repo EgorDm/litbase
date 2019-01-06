@@ -6,8 +6,8 @@
 
 #include <armadillo>
 #include <fftw3.h>
-#include "../litsignal_constants.h"
-#include "algorithm_interface.h"
+#include "litsignal_constants.h"
+#include "algorithm_structure/algorithm_interface.h"
 
 namespace litsignal { namespace algorithm {
     struct IFFTContext : AlgorithmContext<arma::vec> {

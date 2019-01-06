@@ -6,10 +6,10 @@
 
 #include <armadillo>
 #include <algorithm_structure/algorithm_interface.h>
-#include <algorithm_structure/node_ifft.h>
-#include <algorithm_structure/node_window_vec.h>
-#include <algorithm_structure/frame_factory_mat.h>
-#include <algorithm_structure/output_builder_vec.h>
+#include <algorithm_structure/nodes/node_ifft.h>
+#include <algorithm_structure/nodes/node_window_vec.h>
+#include <algorithm_structure/frame_factories/frame_factory_mat.h>
+#include <algorithm_structure/output_builders/output_builder_vec.h>
 
 using namespace arma;
 using namespace litsignal::algorithm;
@@ -40,7 +40,7 @@ namespace litsignal { namespace analysis {
         }
     };
 
-    using ISTFTPipeline = AlgorithmPipeline<cx_mat, cx_vec, vec, vec, IFFTContext, ISTFTAlgorithm>;
+    using ISTFTPipeline = AlgorithmPipeline<cx_vec, vec, vec, IFFTContext, ISTFTAlgorithm>;
 
     ISTFTPipeline build_istft_algorithm(const cx_mat &input, const vec &window, int hop_size) {
         ISTFTAlgorithm algorithm(window, hop_size);

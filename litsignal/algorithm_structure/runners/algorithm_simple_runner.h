@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "algorithm_interface.h"
+#include "algorithm_structure/algorithm_interface.h"
 
 namespace litsignal { namespace algorithm {
     template<typename P>
