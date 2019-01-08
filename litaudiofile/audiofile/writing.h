@@ -36,6 +36,7 @@ namespace litaudiofile {
         int sample_byte_size = 0;
         int max_frame_size = 0;
         int sample_cursor = 0;
+        std::vector<uint8_t *> output_buffers;
 
         structures::AudioContainerInterface *src;
         structures::AudioContainerInterface *tmp;

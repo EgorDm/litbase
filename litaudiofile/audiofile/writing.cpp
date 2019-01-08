@@ -51,8 +51,7 @@ bool AudioWriter::write_file() {
     }
 
     // Write frames
-    bool finished = false;
-    bool success = false;
+    bool finished = false, success = false;
     while (sample_cursor < tmp->getSampleCount() && !finished) {
         success = write_frame(finished, frame);
         av_packet_unref(&packet);
@@ -233,7 +232,6 @@ bool AudioWriter::write_frame(bool &finished, AVFrame *frame) {
 
 bool AudioWriter::fill_frame_planar(AVFrame *frame) {
    int offset = sample_cursor * sample_byte_size;
-
     for (int i = 0; i < codec_context->channels; ++i) frame->data[i] = dynamic_cast<structures::AudioBufferDeinterleaved<uint8_t> *>(tmp->getBuffer())->getChannelPtr(i) + offset;
     return true;
 }

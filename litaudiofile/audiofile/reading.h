@@ -8,6 +8,7 @@
 
 #include <string>
 #include <utils/debug.h>
+#include <structures/audio_buffer_interface_interleaved.h>
 #include "ffmpeg_utils.h"
 #include "conversion.h"
 
@@ -33,8 +34,12 @@ namespace litaudiofile {
         AVCodecContext *codec_context = nullptr;
         int error = 0;
         bool reading_planar = false;
+        int write_cursor = 0;
+        int frame_size_bytes = 0;
 
     private:
+        structures::AudioBufferDeinterleaved<uint8_t> *tmp_buffer_deinterleaved = nullptr;
+        structures::AudioBufferInterleaved<uint8_t> *tmp_buffer_interleaved = nullptr;
         structures::AudioContainerInterface *tmp = nullptr;
         structures::AudioContainerInterface *dst;
         std::string path;

@@ -70,11 +70,6 @@ namespace litaudio { namespace structures {
             return buffers[channel].data();
         }
 
-        // TODO: remove
-        std::vector<T> &getChannelContainer(int channel) {
-            return buffers[channel];
-        }
-
         void reset() override {
             for (int i = 0; i < this->getChannelCount(); ++i)
                 std::memset(this->getChannel(i), 0,

@@ -60,15 +60,6 @@ namespace litaudio { namespace structures {
             return buffer.data();
         }
 
-        // TODO: remove
-        std::vector<T> &getDataContainer() {
-            return buffer;
-        }
-
-        const std::vector<T> &getDataContainer() const {
-            return buffer;
-        }
-
         void reset() override {
             memset(getData(), 0,
                    static_cast<size_t>(this->getSampleCount() * this->getChannelCount() * this->getSampleSize()));
