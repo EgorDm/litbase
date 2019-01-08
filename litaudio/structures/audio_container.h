@@ -1,81 +1,108 @@
 //
-// Created by egordm on 17-11-2018.
+// Created by egordm on 7-1-19.
 //
 
 #pragma once
 
-#include <vector>
-#include <memory>
-#include "typed_audio_container_interface.h"
+#include "audio_buffer_interface.h"
+#include "audio_buffer_interface_deinterleaved.h"
 
 extern "C" {
-#include <libavformat/avformat.h>
+#include <libavutil/samplefmt.h>
 }
 
 namespace litaudio { namespace structures {
-    template<typename T>
-    class AudioContainer : public TypedAudioContainerInterface<T> {
-    public:
-        using DataContainer = std::vector<std::vector<T>>;
-    private:
-        using parent_type = TypedAudioContainerInterface<T>;
-
-        DataContainer data;
-        int sample_count = 0;
+    class AudioContainerInterface {
+    protected:
+        AVSampleFormat format;
+        int sample_rate;
 
     public:
-        explicit AudioContainer(AVSampleFormat format = AV_SAMPLE_FMT_NONE, int channels = -1, int sample_rate = -1)
-                : TypedAudioContainerInterface<T>(format, channels, sample_rate) {
-            clear();
+        explicit AudioContainerInterface(AVSampleFormat format, int sample_rate)
+                : format(format), sample_rate(sample_rate) {}
+
+        int getSampleRate() const {
+            return sample_rate;
         }
 
-        AudioContainer(AVSampleFormat format, const DataContainer &data, int sample_count, int sample_rate, int channels)
-                : TypedAudioContainerInterface<T>(format, channels, sample_rate),
-                  data(data),
-                  sample_count(sample_count) {}
-
-        void clear() override {
-            AudioContainerInterface::clear();
-            if(parent_type::getChannelCount() <= 0) return;
-            data.clear();
-            data.resize(parent_type::getChannelDimCount());
+        void setSampleRate(int sample_rate) {
+            AudioContainerInterface::sample_rate = sample_rate;
         }
 
-        std::vector<T> &getDataContainer(int channel = 0) {
-            return data[channel];
+        AVSampleFormat getFormat() const {
+            return format;
         }
 
-        const T *getData(int channel) const override {
-            return data[channel].data();
+        void setFormat(AVSampleFormat format) {
+            AudioContainerInterface::format = format;
+            setSampleSize(av_get_bytes_per_sample(format));
         }
 
-        const uint8_t *getByteData(int channel) const override {
-            return reinterpret_cast<const uint8_t *>(getData(channel));
+        int getChannelCount() const {
+            return getBuffer()->getChannelCount();
         }
 
-        int getSampleCount() const override {
-            return sample_count;
+        void setChannelCount(int channel_count) {
+            getModifiableBuffer()->setChannelCount(channel_count);
         }
 
-        void setSampleCount(int sample_count) override {
-            // Resize arrays accordingly
-            if (this->sample_count < sample_count) {
-                int data_per_sample = parent_type::getSampleByteSize() / sizeof(T);
-                if(!parent_type::isPlanar()) data_per_sample *= parent_type::getChannelCount();
-
-                for (int i = 0; i < parent_type::getChannelDimCount(); ++i) {
-                    data[i].resize(static_cast<unsigned long>(sample_count * data_per_sample));
-                }
-            }
-            this->sample_count = sample_count;
+        int getSampleCount() const {
+            return getBuffer()->getSampleCount();
         }
 
-        template<typename O>
-        inline AudioContainer<O> *clone() const {
-            auto ret = new AudioContainer<O>(parent_type::format);
-            ret->copyUnfilledFormat(this);
-            ret->clear();
-            return ret;
+        void setSampleCount(int sample_count) {
+            getModifiableBuffer()->setSampleCount(sample_count);
+        }
+
+        void setSampleSize(int sample_size) {
+            getBuffer()->setSampleSize(sample_size);
+        }
+
+        int getSampleSize() const {
+            return getBuffer()->getSampleSize();
+        }
+
+        virtual AudioBufferInterface *getBuffer() = 0;
+
+        const AudioBufferInterface *getBuffer() const {
+            return const_cast<AudioContainerInterface *>(this)->getBuffer();
+        }
+
+        virtual AudioBufferModifiableInterface *getModifiableBuffer() = 0;
+
+        const AudioBufferModifiableInterface *getModifiableBuffer() const {
+            return const_cast<AudioContainerInterface *>(this)->getModifiableBuffer();
+        }
+
+        bool isSameFormat(const AudioContainerInterface *other) const {
+            return sample_rate == other->getSampleRate() && getChannelCount() == other->getChannelCount() &&
+                   format == other->getFormat();
+        }
+
+        virtual void copyFormat(const AudioContainerInterface *src) {
+            if (getFormat() == AV_SAMPLE_FMT_NONE) setFormat(src->getFormat());
+            if (getSampleRate() < 0) setSampleRate(src->getSampleRate());
+            if (getChannelCount() < 0) setChannelCount(src->getChannelCount());
         }
     };
+
+    template<typename B>
+    class AudioContainer : public AudioContainerInterface {
+    protected:
+        B *buffer;
+
+    public:
+        explicit AudioContainer(B *buffer, AVSampleFormat format = AV_SAMPLE_FMT_NONE, int sample_rate = -1)
+            : AudioContainerInterface(format, sample_rate), buffer(buffer) {}
+
+        AudioBufferInterface *getBuffer() override {
+            return buffer;
+        }
+
+        AudioBufferModifiableInterface *getModifiableBuffer() override {
+            return dynamic_cast<AudioBufferModifiableInterface*>(buffer);
+        }
+    };
+
+    using AbstractAudioContainer = AudioContainer<AudioBufferInterface>;
 }}
