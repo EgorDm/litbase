@@ -2,20 +2,21 @@
 // Created by egordm on 11-11-2018.
 //
 
+#include <structures/audio_container.h>
+#include <structures/audio_buffer_interface_interleaved.h>
 #include "reading.h"
 
 using namespace litaudiofile;
 using namespace litaudio;
 
 bool litaudiofile::AudioReader::read() {
-    if(!open_file()) return false;
+    if (!open_file()) return false;
 
-    if(!read_file()) return false;
+    if (!read_file()) return false;
 
-    dst->copyUnfilledFormat(tmp.get());
-    dst->clear();
+    dst->copyFormat(tmp);
 
-    processing::AudioConverter converter(tmp.get(), dst);
+    processing::AudioConverter converter(tmp, dst);
     return converter.convert();
 }
 
@@ -72,8 +73,16 @@ bool AudioReader::open_file() {
     codec_context->request_sample_fmt = tmp_format;
 
     // Create the temporary audio container
-    tmp = std::make_shared<structures::AudioContainer<uint8_t>>(tmp_format, codec_context->channels, codec_context->sample_rate);
-    reading_planar = av_sample_fmt_is_planar(tmp_format);
+    reading_planar = static_cast<bool>(av_sample_fmt_is_planar(tmp_format));
+
+    structures::AudioBufferInterface *tmp_buffer;
+    int tmp_sample_size = av_get_bytes_per_sample(tmp_format);
+    if (reading_planar) {
+        tmp_buffer = new structures::AudioBufferDeinterleaved<uint8_t>(codec_context->channels, 0, tmp_sample_size);
+    } else {
+        tmp_buffer = new structures::AudioBufferInterleaved<uint8_t>(codec_context->channels, 0, tmp_sample_size);
+    }
+    tmp = new structures::AbstractAudioContainer(tmp_buffer, tmp_format, codec_context->sample_rate);
 
     if ((error = avcodec_open2(codec_context, codec, nullptr)) < 0) {
         ffmpeg_utils::log_error(AudioReader_TAG, "Couldn't open the context with the decoder.", error);
@@ -89,15 +98,14 @@ bool AudioReader::read_file() {
     av_init_packet(&packet);
 
     // Read the data
-    sample_byte_size = tmp->getSampleByteSize();
     bool finished = false;
     bool success = false;
     int sample_count = 0;
-    while(!finished) {
+    while (!finished) {
         success = read_frame(finished, sample_count);
         av_packet_unref(&packet);
 
-        if(!success) return false;
+        if (!success) return false;
     }
 
     tmp->setSampleCount(sample_count);
@@ -105,8 +113,8 @@ bool AudioReader::read_file() {
 }
 
 bool AudioReader::read_frame(bool &finished, int &sample_count) {
-    if((error = av_read_frame(format_context, &packet)) < 0) {
-        if(error == AVERROR_EOF) {
+    if ((error = av_read_frame(format_context, &packet)) < 0) {
+        if (error == AVERROR_EOF) {
             finished = true;
         } else {
             ffmpeg_utils::log_error(AudioReader_TAG, "Error reading frame.", error);
@@ -130,14 +138,14 @@ bool AudioReader::read_frame(bool &finished, int &sample_count) {
     // Recieve decoded data
     while ((error = avcodec_receive_frame(codec_context, frame)) == 0) {
         sample_count += frame->nb_samples;
-        if(reading_planar) handle_frame_planar();
+        if (reading_planar) handle_frame_planar();
         else handle_frame_packed();
     }
 
-    if(error < 0) {
-        if(error == AVERROR_EOF) {
+    if (error < 0) {
+        if (error == AVERROR_EOF) {
             error = 0;
-        } else if(error != AVERROR(EAGAIN)) {
+        } else if (error != AVERROR(EAGAIN)) {
             ffmpeg_utils::log_error(AudioReader_TAG, "Could not decode frame ", error);
             return false;
         }
@@ -147,15 +155,17 @@ bool AudioReader::read_frame(bool &finished, int &sample_count) {
 }
 
 bool AudioReader::handle_frame_packed() {
-    int cursor_end = frame->nb_samples * tmp->getChannelCount() * sample_byte_size;
-    tmp->getDataContainer().insert(tmp->getDataContainer().end(), frame->extended_data[0], frame->extended_data[0] + cursor_end);
+    int cursor_end = frame->nb_samples * tmp->getChannelCount() * tmp->getSampleSize();
+    auto &container = dynamic_cast<structures::AudioBufferInterleaved<uint8_t> *>(tmp->getBuffer())->getDataContainer();
+    container.insert(container.end(), frame->extended_data[0], frame->extended_data[0] + cursor_end);
     return true;
 }
 
 bool AudioReader::handle_frame_planar() {
-    int cursor_end = frame->nb_samples * sample_byte_size;
+    int cursor_end = frame->nb_samples * tmp->getSampleSize();
     for (int c = 0; c < tmp->getChannelCount(); ++c) {
-        tmp->getDataContainer(c).insert(tmp->getDataContainer(c).end(), frame->extended_data[c], frame->extended_data[c] + cursor_end);
+        auto &container = dynamic_cast<structures::AudioBufferDeinterleaved<uint8_t> *>(tmp->getBuffer())->getChannelContainer(c);
+        container.insert(container.end(), frame->extended_data[c], frame->extended_data[c] + cursor_end);
     }
     return true;
 }

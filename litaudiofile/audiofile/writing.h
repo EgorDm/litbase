@@ -6,7 +6,7 @@
 
 #include <string>
 #include <utils/debug.h>
-#include <structures/audio_container_interface.h>
+#include <structures/audio_container.h>
 #include "ffmpeg_utils.h"
 
 extern "C" {

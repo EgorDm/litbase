@@ -3,6 +3,8 @@
 //
 
 
+#include <structures/audio_container.h>
+#include <structures/audio_buffer_interface_interleaved.h>
 #include "writing.h"
 #include "conversion.h"
 
@@ -86,8 +88,15 @@ bool AudioWriter::pick_sample_format() {
         codec_context->sample_fmt = codec->sample_fmts[0];
 
         // Do conversion first
-        tmp = new structures::AudioContainer<uint8_t>(codec_context->sample_fmt, src->getChannelCount());
-        tmp->copyUnfilledFormat(src);
+        structures::AudioBufferInterface *tmp_buffer;
+        int tmp_sample_size = av_get_bytes_per_sample(codec_context->sample_fmt);
+        if (av_sample_fmt_is_planar(codec_context->sample_fmt)) {
+            tmp_buffer = new structures::AudioBufferDeinterleaved<uint8_t>(src->getChannelCount(), 0, tmp_sample_size);
+        } else {
+            tmp_buffer = new structures::AudioBufferInterleaved<uint8_t>(src->getChannelCount(), 0, tmp_sample_size);
+        }
+        tmp = new structures::AbstractAudioContainer(tmp_buffer, codec_context->sample_fmt);
+        tmp->copyFormat(src);
         processing::AudioConverter converter(src, tmp);
 
         if (!converter.convert()) {
@@ -223,12 +232,13 @@ bool AudioWriter::write_frame(bool &finished, AVFrame *frame) {
 }
 
 bool AudioWriter::fill_frame_planar(AVFrame *frame) {
-    int offset = sample_cursor * sample_byte_size;
-    for (int i = 0; i < codec_context->channels; ++i) frame->data[i] = tmp->getByteData(i) + offset;
+   int offset = sample_cursor * sample_byte_size;
+
+    for (int i = 0; i < codec_context->channels; ++i) frame->data[i] = dynamic_cast<structures::AudioBufferDeinterleaved<uint8_t> *>(tmp->getBuffer())->getChannelPtr(i) + offset;
     return true;
 }
 
 bool AudioWriter::fill_frame_packed(AVFrame *frame) {
-    frame->data[0] = tmp->getByteData() + sample_cursor * sample_byte_size * codec_context->channels;
-    return true;
+    frame->data[0] = dynamic_cast<structures::AudioBufferInterleaved<uint8_t> *>(tmp->getBuffer())->getDataPtr() + sample_cursor * sample_byte_size * codec_context->channels;
+    return true; // TODO
 }

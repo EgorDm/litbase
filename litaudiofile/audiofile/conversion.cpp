@@ -3,6 +3,7 @@
 //
 
 #include <cstring>
+#include <structures/audio_buffer_interface_interleaved.h>
 #include "conversion.h"
 
 using namespace litaudiofile::processing;
@@ -13,18 +14,8 @@ AudioConverter::~AudioConverter() {
 
 bool AudioConverter::convert() {
     // Check if format is already correct. Then just copy the data
-    if(src->isSameFormat(dst)) {
-        dst->setSampleCount(src->getSampleCount());
-        if(src->isPlanar()) {
-            for (int c = 0; c < src->getChannelCount(); ++c) {
-                int copy_byte_count = src->getSampleCount() * src->getSampleByteSize();
-                std::memcpy (dst->getByteData(c), src->getByteData(c), copy_byte_count);
-            }
-        } else {
-            int copy_byte_count = src->getSampleCount() * src->getSampleByteSize() * src->getChannelCount();
-            std::memcpy (dst->getByteData(), src->getByteData(), copy_byte_count);
-        }
-
+    if(dst->isSameFormat(src)) {
+        dst->getBuffer()->copyData(src->getBuffer());
         return true;
     }
 
@@ -46,15 +37,14 @@ bool AudioConverter::convert() {
         return false;
     }
 
-    // Set pcm infomation
-    dst->clear();
+    // Set size infomation
     dst->setSampleCount(swr_get_out_samples(context, src->getSampleCount()));
 
-    auto dst_data = dst->getByteChannelData();
-    auto src_data = src->getByteChannelData();
+    auto dst_data = dst->getBuffer()->getDataFull();
+    auto src_data = src->getBuffer()->getDataFullC();
 
     // Resample and set pcm data
-    if (swr_convert(context, &dst_data.data()[0], dst->getSampleCount(), &src_data.data()[0], src->getSampleCount()) < 0) {
+    if (swr_convert(context, dst_data.data(), dst->getSampleCount(), src_data.data(), src->getSampleCount()) < 0) {
         debug::log_error(AudioConverter_TAG, "Error while converting");
         return false;
     }

@@ -18,7 +18,7 @@ SignalContainer::SignalContainer(arma::mat data, int sample_rate)
           data(std::move(data)) {}
 
 void SignalContainer::clear() {
-    AudioContainerInterface::clear();
+    AudioContainerInterfaceZ::clear();
     data = arma::mat(0, static_cast<const arma::uword>(getChannelCount()));
 }
 

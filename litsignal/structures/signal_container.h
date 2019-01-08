@@ -5,7 +5,7 @@
 #pragma once
 
 #include <armadillo>
-#include <structures/audio_container_interface.h>
+#include <structures/audio_container_interfacez.h>
 #include <structures/typed_audio_container_interface.h>
 
 using namespace litaudio::structures;

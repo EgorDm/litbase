@@ -33,10 +33,9 @@ namespace litaudiofile {
         AVCodecContext *codec_context = nullptr;
         int error = 0;
         bool reading_planar = false;
-        int sample_byte_size = 0;
 
     private:
-        std::shared_ptr<structures::AudioContainer<uint8_t>> tmp = nullptr;
+        structures::AudioContainerInterface *tmp = nullptr;
         structures::AudioContainerInterface *dst;
         std::string path;
 
@@ -51,8 +50,7 @@ namespace litaudiofile {
         bool handle_frame_planar();
 
     public:
-        AudioReader(structures::AudioContainerInterface *dst, std::string path)
-                : dst(dst), path(std::move(path)) {}
+        AudioReader(structures::AudioContainerInterface *dst, std::string path) : dst(dst), path(std::move(path)) {}
 
         virtual ~AudioReader() {
             av_frame_free(&frame);

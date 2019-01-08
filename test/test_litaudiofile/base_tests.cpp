@@ -16,11 +16,12 @@ class LitAudioFileBaseTests : public ::testing::Test {
 };
 
 TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
-    auto src = new AudioContainer<uint16_t>(AV_SAMPLE_FMT_S16);
+    auto src = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<uint8_t>(-1, 0, av_get_bytes_per_sample(AV_SAMPLE_FMT_S16P)), AV_SAMPLE_FMT_S16P);
     auto reader = AudioReader(src, "data/hangar.mp3");
     ASSERT_TRUE(reader.read());
 
-    auto dst = src->clone<uint16_t>();
+    auto dst = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<uint8_t>(-1, 0, av_get_bytes_per_sample(AV_SAMPLE_FMT_S16P)), AV_SAMPLE_FMT_S16P);
+    dst->copyFormat(src);
     dst->setSampleRate(src->getSampleRate() / 2);
     auto converter = processing::AudioConverter(src, dst);
     ASSERT_TRUE(converter.convert());

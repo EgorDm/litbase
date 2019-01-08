@@ -100,7 +100,7 @@ namespace litsignal { namespace processing {
         }
     };
 
-    using PhaseVocoderPipeline = AlgorithmPipeline<vec, vec, vec, vec, PVContext, PhaseVocoderAlgorithm>;
+    using PhaseVocoderPipeline = AlgorithmPipeline<vec, vec, vec, PVContext, PhaseVocoderAlgorithm>;
 
     PhaseVocoderPipeline build_pv_algorithm(const vec &input, const vec &window, int syn_hop_size, float alpha) {
         PhaseVocoderAlgorithm algorithm(window, syn_hop_size, alpha);

@@ -55,7 +55,7 @@ namespace litsignal { namespace algorithm {
         }
 
         void fill(Col<T> &frame, int i) override {
-            utils::fill_frame<float>(input.memptr(), frame.memptr(), ACI(input.size()), frame_size, getPos(i));
+            utils::fill_frame<T>(input.memptr(), frame.memptr(), ACI(input.size()), frame_size, getPos(i));
         }
 
         virtual int getPos(int i) {
