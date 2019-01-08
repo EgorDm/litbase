@@ -1,6 +1,7 @@
 //
 // Created by egordm on 11-11-2018.
 //
+// Warning this is my skeleton closed. Proceed cautiously
 
 #include <structures/audio_container.h>
 #include <structures/audio_buffer_interface_interleaved.h>

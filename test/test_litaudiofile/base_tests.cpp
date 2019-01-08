@@ -16,18 +16,39 @@ class LitAudioFileBaseTests : public ::testing::Test {
 };
 
 TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
+    clock_t begin, end;
+    double elapsed_secs;
+
+    // Read
+    begin = clock();
     auto src = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<uint8_t>(-1, 0, av_get_bytes_per_sample(AV_SAMPLE_FMT_S16P)), AV_SAMPLE_FMT_S16P);
     auto reader = AudioReader(src, "data/hangar.mp3");
     ASSERT_TRUE(reader.read());
 
+    end = clock();
+    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout << "Read file in secs: " << elapsed_secs << std::endl;
+
+    // Convert
+    begin = clock();
     auto dst = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<uint8_t>(-1, 0, av_get_bytes_per_sample(AV_SAMPLE_FMT_S16P)), AV_SAMPLE_FMT_S16P);
     dst->copyFormat(src);
     dst->setSampleRate(src->getSampleRate() / 2);
     auto converter = processing::AudioConverter(src, dst);
     ASSERT_TRUE(converter.convert());
 
+    end = clock();
+    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout << "Converted file in secs: " << elapsed_secs << std::endl;
+
+    // Write
+    begin = clock();
     auto writer = AudioWriter(dst, "data/output/dst.mp3");
     ASSERT_TRUE(writer.write());
+
+    end = clock();
+    elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+    std::cout << "Wrote file in secs: " << elapsed_secs << std::endl;
 
 }
 

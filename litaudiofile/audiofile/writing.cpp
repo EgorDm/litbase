@@ -1,7 +1,7 @@
 //
 // Created by egordm on 11-11-2018.
 //
-
+// Warning this is my skeleton closed. Proceed cautiously
 
 #include <structures/audio_container.h>
 #include <structures/audio_buffer_interface_interleaved.h>
@@ -15,65 +15,6 @@ bool AudioWriter::write() {
     if (!open_file()) return false;
 
     return write_file();
-}
-
-bool AudioWriter::write_file() {
-    if ((error = avformat_write_header(format_context, nullptr)) < 0) {
-        ffmpeg_utils::log_error(AudioWrite_TAG, "Could not write output file header.", error);
-        return false;
-    }
-
-    /* Create a new frame to store the audio samples. */
-    if ((frame = av_frame_alloc()) == nullptr) {
-        ffmpeg_utils::log_error(AudioWrite_TAG, "Could not allocate output frame");
-        return false;
-    }
-
-    frame->channel_layout = codec_context->channel_layout;
-    frame->format = codec_context->sample_fmt;
-    frame->sample_rate = codec_context->sample_rate;
-
-    av_init_packet(&packet);
-
-    writing_planar = static_cast<bool>(av_sample_fmt_is_planar(codec_context->sample_fmt));
-    max_frame_size = codec_context->frame_size == 0 ? AV_CODEC_CAP_VARIABLE_FRAME_SIZE : codec_context->frame_size;
-    sample_byte_size = av_get_bytes_per_sample(codec_context->sample_fmt);
-
-    if (writing_planar) { // Planar strategy is to copy everything into a temp buffer
-        frame->nb_samples = max_frame_size;
-
-        /* Allocate the samples of the created frame. This call will make
-         * sure that the audio frame can hold as many samples as specified. */
-        if ((error = av_frame_get_buffer(frame, 0)) < 0) {
-            ffmpeg_utils::log_error(AudioWrite_TAG, "Could not allocate output frame samples.", error);
-            return false;
-        }
-    }
-
-    // Write frames
-    bool finished = false, success = false;
-    while (sample_cursor < tmp->getSampleCount() && !finished) {
-        success = write_frame(finished, frame);
-        av_packet_unref(&packet);
-
-        if (!success) return false;
-    }
-
-    // Flush
-    write_frame(finished, nullptr);
-    av_packet_unref(&packet);
-
-    frame->nb_samples = max_frame_size;
-
-    if ((error = av_write_trailer(format_context)) < 0) {
-        ffmpeg_utils::log_error(AudioWrite_TAG, "Could not write output file trailer.", error);
-        return false;
-    }
-
-    avio_closep(&format_context->pb);
-    output_io_context = nullptr;
-
-    return true;
 }
 
 bool AudioWriter::pick_sample_format() {
@@ -182,6 +123,68 @@ bool AudioWriter::open_file() {
     return true;
 }
 
+bool AudioWriter::write_file() {
+    if ((error = avformat_write_header(format_context, nullptr)) < 0) {
+        ffmpeg_utils::log_error(AudioWrite_TAG, "Could not write output file header.", error);
+        return false;
+    }
+
+    /* Create a new frame to store the audio samples. */
+    if ((frame = av_frame_alloc()) == nullptr) {
+        ffmpeg_utils::log_error(AudioWrite_TAG, "Could not allocate output frame");
+        return false;
+    }
+
+    frame->channel_layout = codec_context->channel_layout;
+    frame->format = codec_context->sample_fmt;
+    frame->sample_rate = codec_context->sample_rate;
+
+    av_init_packet(&packet);
+
+    writing_planar = static_cast<bool>(av_sample_fmt_is_planar(codec_context->sample_fmt));
+    max_frame_size = codec_context->frame_size == 0 ? AV_CODEC_CAP_VARIABLE_FRAME_SIZE : codec_context->frame_size;
+    sample_byte_size = av_get_bytes_per_sample(codec_context->sample_fmt);
+
+    if (writing_planar) { // Planar strategy is to copy everything into a temp buffer
+        frame->nb_samples = max_frame_size;
+
+        /* Allocate the samples of the created frame. This call will make
+         * sure that the audio frame can hold as many samples as specified. */
+        if ((error = av_frame_get_buffer(frame, 0)) < 0) {
+            ffmpeg_utils::log_error(AudioWrite_TAG, "Could not allocate output frame samples.", error);
+            return false;
+        }
+    }
+
+    // Set buffer cursor
+    output_buffer_cursors = tmp->getBuffer()->getDataFull();
+
+    // Write frames
+    bool finished = false, success = false;
+    while (sample_cursor < tmp->getSampleCount() && !finished) {
+        success = write_frame(finished, frame);
+        av_packet_unref(&packet);
+
+        if (!success) return false;
+    }
+
+    // Flush
+    write_frame(finished, nullptr);
+    av_packet_unref(&packet);
+
+    frame->nb_samples = max_frame_size;
+
+    if ((error = av_write_trailer(format_context)) < 0) {
+        ffmpeg_utils::log_error(AudioWrite_TAG, "Could not write output file trailer.", error);
+        return false;
+    }
+
+    avio_closep(&format_context->pb);
+    output_io_context = nullptr;
+
+    return true;
+}
+
 bool AudioWriter::write_frame(bool &finished, AVFrame *frame) {
     // Fill the frame with sample data
     if (frame != nullptr) {
@@ -231,12 +234,16 @@ bool AudioWriter::write_frame(bool &finished, AVFrame *frame) {
 }
 
 bool AudioWriter::fill_frame_planar(AVFrame *frame) {
-   int offset = sample_cursor * sample_byte_size;
-    for (int i = 0; i < codec_context->channels; ++i) frame->data[i] = dynamic_cast<structures::AudioBufferDeinterleaved<uint8_t> *>(tmp->getBuffer())->getChannelPtr(i) + offset;
+    int frame_size_bytes = frame->nb_samples * sample_byte_size;
+    for (int i = 0; i < codec_context->channels; ++i) {
+        frame->data[i] = output_buffer_cursors[i];
+        output_buffer_cursors[i] += frame_size_bytes;
+    }
     return true;
 }
 
 bool AudioWriter::fill_frame_packed(AVFrame *frame) {
-    frame->data[0] = dynamic_cast<structures::AudioBufferInterleaved<uint8_t> *>(tmp->getBuffer())->getDataPtr() + sample_cursor * sample_byte_size * codec_context->channels;
-    return true; // TODO
+    frame->data[0] = output_buffer_cursors[0];
+    output_buffer_cursors[0] += frame->nb_samples * sample_byte_size * codec_context->channels;
+    return true;
 }
