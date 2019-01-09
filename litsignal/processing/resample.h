@@ -13,11 +13,11 @@ using namespace litsignal::structures;
 namespace litsignal { namespace processing {
     class SignalResampler {
     private:
-        SignalContainer *input;
-        SignalContainer *output;
+        SignalContainer<double> *input;
+        SignalContainer<double> *output;
 
     public:
-        SignalResampler(SignalContainer *input, SignalContainer *output);
+        SignalResampler(SignalContainer<double> *input, SignalContainer<double> *output);
 
         bool resample();
     };

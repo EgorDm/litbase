@@ -7,12 +7,9 @@
 #include <armadillo>
 #include <utils/debug.h>
 #include <utils/math.h>
-#include <structures/typed_audio_container_interface.h>
 
 using namespace arma;
 using namespace litcore;
-
-using namespace litaudio::structures;
 
 namespace litsignal { namespace processing { namespace detail {
     // Credit to https://github.com/terrygta/SignalResampler

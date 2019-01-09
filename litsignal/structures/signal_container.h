@@ -5,36 +5,87 @@
 #pragma once
 
 #include <armadillo>
-#include <structures/audio_container_interfacez.h>
-#include <structures/typed_audio_container_interface.h>
+#include <structures/audio_buffer_interface_deinterleaved.h>
+#include <structures/audio_container.h>
+#include "../litsignal_constants.h"
 
 using namespace litaudio::structures;
 
 namespace litsignal { namespace structures {
-    class SignalContainer : public TypedAudioContainerInterface<double> {
-    private:
-        arma::mat data;
+    template<typename T>
+    class AudioSignalBuffer : public AudioBufferDeinterleavedInterface<T>, public AudioBufferModifiableInterface {
+    protected:
+        arma::Mat<T> buffers;
 
     public:
-        SignalContainer();
+        explicit AudioSignalBuffer(int channel_count, int capacity = -1)
+                : AudioBufferDeinterleavedInterface<T>(channel_count, capacity, sizeof(T)) {}
 
-        SignalContainer(int sample_rate, int channels);
+        explicit AudioSignalBuffer(const arma::Mat<T> &data)
+                : AudioBufferDeinterleavedInterface<T>(data.n_cols, data.n_rows, sizeof(T)), buffers(data) {}
 
-        SignalContainer(arma::mat data, int sample_rate);
+        T *getChannel(int channel) override {
+            return buffers.colptr(channel);
+        }
 
-        void clear() override;
+        // TODO: this should be used within an interface?
+        auto getChannelContainer(int channel) {
+            return buffers.col(channel);
+        }
 
-        const uint8_t *getByteData(int channel) const override;
+        arma::Mat<T> &getData() {
+            return buffers;
+        }
 
-        const double *getData(int channel) const override;
+        void setChannelCount(int channel_count) override {
+            AudioBufferInterface::channel_count = channel_count;
+            buffers.resize(ACU(this->getSampleCount()), ACU(channel_count));
+        }
 
-        int getSampleCount() const override;
+        void setSampleCount(int sample_count) override {
+            AudioBufferInterface::capacity = sample_count;
+            buffers.resize(ACU(sample_count), ACU(this->getChannelCount()));
+        }
 
-        void setSampleCount(int sample_count) override;
+        void reset() override {
+            buffers.fill(0);
+        }
 
-        const arma::mat &get_data_vec() const;
+        void clear() override {
+            reset();
+        }
+    };
 
-        void set_data_vec(const arma::mat &data);
+    template<typename T>
+    class SignalContainer : public AudioContainer<AudioSignalBuffer<T>> {
+    private:
+        using Parent = AudioContainer<AudioSignalBuffer<T>>;
+    public:
+        explicit SignalContainer(AVSampleFormat format = AV_SAMPLE_FMT_NONE, int channel_count = -1,
+                                 int sample_rate = -1, int capacity = 0)
+                : Parent(new AudioSignalBuffer<T>(channel_count, capacity), format, sample_rate) {}
+
+        explicit SignalContainer(const arma::Mat<T> &data, AVSampleFormat format = AV_SAMPLE_FMT_NONE,
+                                 int sample_rate = -1)
+                : Parent(new AudioSignalBuffer<T>(data), format, sample_rate) {}
+    };
+
+    class SignalContainerDbl : public SignalContainer<double> {
+    public:
+        explicit SignalContainerDbl(int channel_count = -1, int sample_rate = -1, int capacity = 0)
+                : SignalContainer(AV_SAMPLE_FMT_DBLP, channel_count, sample_rate, capacity) {}
+
+        SignalContainerDbl(const arma::Mat<double> &data, int sample_rate = -1)
+                : SignalContainer(data, AV_SAMPLE_FMT_DBLP, sample_rate) {}
+    };
+
+    class SignalContainerFlt : public SignalContainer<float> {
+    public:
+        explicit SignalContainerFlt(int channel_count = -1, int sample_rate = -1, int capacity = 0)
+                : SignalContainer(AV_SAMPLE_FMT_FLTP, channel_count, sample_rate, capacity) {}
+
+        SignalContainerFlt(const arma::Mat<float> &data, int sample_rate = -1)
+                : SignalContainer(data, AV_SAMPLE_FMT_FLTP, sample_rate) {}
     };
 }}
 

@@ -72,8 +72,7 @@ namespace litaudio { namespace structures {
 
         void reset() override {
             for (int i = 0; i < this->getChannelCount(); ++i)
-                std::memset(this->getChannel(i), 0,
-                            static_cast<size_t>(this->getSampleCount() * this->getSampleSize()));
+                std::memset(this->getChannel(i), 0, (size_t)(this->getSampleCount() * this->getSampleSize()));
         }
 
         void clear() override {
@@ -91,5 +90,4 @@ namespace litaudio { namespace structures {
             for (auto &buffer : AudioBufferDeinterleaved<T>::buffers) buffer.resize(sample_count * data_per_sample);
         }
     };
-
 }}

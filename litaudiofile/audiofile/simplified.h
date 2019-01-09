@@ -33,7 +33,7 @@ namespace litaudiofile { namespace simplified {
 
     PCMAudio *read_audio_pcm(const std::string &path, int sample_rate = -1);
 
-    bool write_audio(const std::string &path, AbstractAudioContainer *audio);
+    bool write_audio(const std::string &path, AudioContainerInterface *audio);
 
 }}
 

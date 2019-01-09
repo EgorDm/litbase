@@ -23,12 +23,16 @@ namespace litaudio { namespace structures {
             delete buffer;
         }
 
-        AudioBufferInterface *getBuffer() override {
+        B *getBuffer() override {
             return buffer;
         }
 
         AudioBufferModifiableInterface *getModifiableBuffer() override {
             return dynamic_cast<AudioBufferModifiableInterface *>(buffer);
+        }
+
+        bool isModifyable() {
+            return getModifiableBuffer() != nullptr;
         }
     };
 

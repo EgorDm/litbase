@@ -17,7 +17,7 @@ class LitSignalBaseTests : public ::testing::Test {
 };
 
 TEST_F(LitSignalBaseTests, ReadWrite_Test) {
-    SignalContainer src;
+    SignalContainerDbl src;
     AudioReader reader(&src, "data/hangar.mp3");
     ASSERT_TRUE(reader.read());
 
@@ -26,11 +26,11 @@ TEST_F(LitSignalBaseTests, ReadWrite_Test) {
 }
 
 TEST_F(LitSignalBaseTests, ReadWriteConvertResample_Test) {
-    SignalContainer src;
+    SignalContainerDbl src;
     AudioReader reader(&src, "data/hangar.mp3");
     ASSERT_TRUE(reader.read());
 
-    SignalContainer dst;
+    SignalContainerDbl dst;
     dst.setSampleRate(src.getSampleRate() / 2);
     SignalResampler resampler(&src, &dst);
     ASSERT_TRUE(resampler.resample());

@@ -22,7 +22,9 @@ using namespace litaudiofile;
 
 class LitSignalAnalysisTests : public ::testing::Test {
 protected:
-    SignalContainer signal;
+    SignalContainerDbl signal;
+
+protected:
 
     void SetUp() override {
         AudioReader reader(&signal, "data/hangar.mp3");
@@ -40,7 +42,7 @@ TEST_F(LitSignalAnalysisTests, SFFT_Performace_Test) {
     int sample_rate = signal.getSampleRate();
     vec window = window::hanning(window_size);
     std::cout << window.t() << std::endl;
-    vec X = signal.get_data_vec().col(0);
+    vec X = signal.getBuffer()->getChannelContainer(0);
 
 
     clock_t begin = clock();
@@ -85,7 +87,7 @@ TEST_F(LitSignalAnalysisTests, SFFT_Correctness_Test) {
 }
 
 TEST_F(LitSignalAnalysisTests, PhaseVocoder_Performance_Test) {
-    vec X = signal.get_data_vec().col(0);
+    vec X = signal.getBuffer()->getChannelContainer(0);
     int sample_rate = signal.getSampleRate();
 
     clock_t begin = clock();
@@ -96,7 +98,7 @@ TEST_F(LitSignalAnalysisTests, PhaseVocoder_Performance_Test) {
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     std::cout << "Calculated PhaseVocoder in secs: " << elapsed_secs << std::endl;
 
-    auto container = SignalContainer(newSignal, sample_rate);
+    auto container = SignalContainer<double>(newSignal, AV_SAMPLE_FMT_DBLP, sample_rate);
     auto ret = litaudiofile::simplified::write_audio("data/output/dst_vocode.wav", &container);
     if(!ret) std::cout << "FAIL!" << std::endl;
 }

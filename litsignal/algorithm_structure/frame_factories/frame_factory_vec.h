@@ -48,7 +48,9 @@ namespace litsignal { namespace algorithm {
 
     public:
         FrameFactoryVec(const Col<T> &input, int frame_size, int hop_size)
-                : FrameHopInterface(frame_size, hop_size), input(input) {}
+                : FrameHopInterface(frame_size, hop_size), input(input) {
+            int i = 0;
+        }
 
         Col<T> create() override {
             return Col<T>(ACU(frame_size));
@@ -63,7 +65,7 @@ namespace litsignal { namespace algorithm {
         }
 
         int getFrameCount() override {
-            return ACI(std::round((input.size() + frame_size) / (float) hop_size));
+            return ACI(std::floor((input.size() + frame_half_size) / (float) hop_size));
         }
 
         int getInputSize() override {
