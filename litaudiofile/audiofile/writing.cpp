@@ -10,6 +10,7 @@
 
 using namespace litcore;
 using namespace litaudiofile;
+using namespace litaudio::structures;
 
 bool AudioWriter::write() {
     if (!open_file()) return false;
@@ -28,14 +29,11 @@ bool AudioWriter::pick_sample_format() {
         codec_context->sample_fmt = codec->sample_fmts[0];
 
         // Do conversion first
-        structures::AudioBufferInterface *tmp_buffer;
-        int tmp_sample_size = av_get_bytes_per_sample(codec_context->sample_fmt);
         if (av_sample_fmt_is_planar(codec_context->sample_fmt)) {
-            tmp_buffer = new structures::AudioBufferDeinterleaved<uint8_t>(src->getChannelCount(), 0, tmp_sample_size);
+            tmp = createAudioContainer<AudioBufferDeinterleaved<uint8_t>> (codec_context->sample_fmt, src->getChannelCount());
         } else {
-            tmp_buffer = new structures::AudioBufferInterleaved<uint8_t>(src->getChannelCount(), 0, tmp_sample_size);
+            tmp = createAudioContainer<AudioBufferInterleaved<uint8_t>>(codec_context->sample_fmt, src->getChannelCount());
         }
-        tmp = new structures::AbstractAudioContainer(tmp_buffer, codec_context->sample_fmt);
         tmp->copyFormat(src);
         processing::AudioConverter converter(src, tmp);
 

@@ -9,6 +9,7 @@
 
 using namespace litaudiofile;
 using namespace litaudio;
+using namespace litaudio::structures;
 
 bool litaudiofile::AudioReader::read() {
     if (!open_file()) return false;
@@ -76,23 +77,23 @@ bool AudioReader::open_file() {
     // Create the temporary audio container
     reading_planar = static_cast<bool>(av_sample_fmt_is_planar(tmp_format));
 
-    structures::AudioBufferInterface *tmp_buffer;
-    int tmp_sample_size = av_get_bytes_per_sample(tmp_format);
     if (reading_planar) {
-        tmp_buffer_deinterleaved = new structures::AudioBufferDeinterleaved<uint8_t>(codec_context->channels, 0, tmp_sample_size);
-        tmp_buffer = tmp_buffer_deinterleaved;
+        tmp = createAudioContainer<AudioBufferDeinterleaved<uint8_t>>
+                (tmp_format, codec_context->channels, codec_context->sample_rate, 0);
+        tmp_buffer_deinterleaved = dynamic_cast<AudioBufferDeinterleaved<uint8_t> *>(tmp->getBuffer());
     } else {
-        tmp_buffer_interleaved = new structures::AudioBufferInterleaved<uint8_t>(codec_context->channels, 0, tmp_sample_size);
-        tmp_buffer = tmp_buffer_interleaved;
+        tmp = createAudioContainer<AudioBufferInterleaved<uint8_t>>
+                (tmp_format, codec_context->channels, codec_context->sample_rate, 0);
+        tmp_buffer_interleaved = reinterpret_cast<AudioBufferInterleaved<uint8_t> *>(tmp->getBuffer());
     }
-    tmp = new structures::AbstractAudioContainer(tmp_buffer, tmp_format, codec_context->sample_rate);
 
     if ((error = avcodec_open2(codec_context, codec, nullptr)) < 0) {
         ffmpeg_utils::log_error(AudioReader_TAG, "Couldn't open the context with the decoder.", error);
         return false;
     }
 
-    int estimated_sample_count = static_cast<int>(format_context->duration / (float)AV_TIME_BASE * codec_context->sample_rate);
+    int estimated_sample_count = static_cast<int>(format_context->duration / (float) AV_TIME_BASE *
+                                                  codec_context->sample_rate);
     tmp->setSampleCount(estimated_sample_count);
 
     return true;
@@ -144,7 +145,7 @@ bool AudioReader::read_frame(bool &finished, int &sample_count) {
     // Recieve decoded data
     while ((error = avcodec_receive_frame(codec_context, frame)) == 0) {
         // Resize buffer if it is too small
-        if(sample_count + frame->nb_samples > tmp->getSampleCount()) {
+        if (sample_count + frame->nb_samples > tmp->getSampleCount()) {
             tmp->setSampleCount(sample_count + frame->nb_samples * 2);
         }
 

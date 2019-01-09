@@ -18,7 +18,7 @@ using namespace litaudiofile;
 namespace litaudiofile { namespace simplified {
     template <typename T>
     inline AudioContainer<AudioBufferDeinterleaved<T>> *read_audio(const std::string &path, const AVSampleFormat &format, int sample_rate = -1) {
-        auto ret = new AudioContainer<AudioBufferDeinterleaved<T>>(new AudioBufferDeinterleaved<T>(-1, 0, av_get_bytes_per_sample(format)),format);
+        auto ret = createAudioContainer<AudioBufferDeinterleaved<T>>(format);
         ret->sample_rate = sample_rate;
 
         auto reader = AudioReader(ret, path);
