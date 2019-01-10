@@ -21,7 +21,7 @@ TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
 
     // Read
     begin = clock();
-    auto src = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<uint8_t>(-1, 0, av_get_bytes_per_sample(AV_SAMPLE_FMT_S16P)), AV_SAMPLE_FMT_S16P);
+    auto src = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<int16_t>(-1, 0));
     auto reader = AudioReader(src, "data/hangar.mp3");
     ASSERT_TRUE(reader.read());
 
@@ -31,7 +31,7 @@ TEST_F(LitAudioFileBaseTests, ReadWriteConvertResample_Test) {
 
     // Convert
     begin = clock();
-    auto dst = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<uint8_t>(-1, 0, av_get_bytes_per_sample(AV_SAMPLE_FMT_S16P)), AV_SAMPLE_FMT_S16P);
+    auto dst = new AbstractAudioContainer(new structures::AudioBufferDeinterleaved<int16_t >(-1, 0));
     dst->copyFormat(src);
     dst->setSampleRate(src->getSampleRate() / 2);
     auto converter = processing::AudioConverter(src, dst);

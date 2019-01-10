@@ -32,7 +32,7 @@ namespace litaudiofile { namespace ffmpeg_utils {
 
     inline void log_error(const std::string &tag, const std::string &message, int error = 0) {
 #ifdef DEBUG
-        if(error == 0) {
+        if (error == 0) {
             debug::log_error(tag, message);
         } else {
             debug::log_error(tag, message + " | AVERR: " + av_err2str(error));

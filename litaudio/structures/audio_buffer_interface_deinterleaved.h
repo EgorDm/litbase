@@ -5,14 +5,15 @@
 #pragma once
 
 #include <cstring>
+#include <utils/litaudio_utils.h>
 #include "audio_buffer_interface.h"
 
 namespace litaudio { namespace structures {
     template<typename T>
     class AudioBufferDeinterleavedInterface : public AudioBufferInterface {
     public:
-        AudioBufferDeinterleavedInterface(int channel_count, int capacity, int sample_size = -1)
-                : AudioBufferInterface(channel_count, capacity, sample_size > 0 ? sample_size : sizeof(T)) {}
+        AudioBufferDeinterleavedInterface(int channel_count, int capacity)
+                : AudioBufferInterface(channel_count, capacity, utils::deduce_format<T>(true)) {}
 
         const T *getChannel(int channel) const {
             return const_cast<AudioBufferDeinterleavedInterface *>(this)->getChannel(channel);
@@ -59,8 +60,8 @@ namespace litaudio { namespace structures {
         std::vector<std::vector<T>> buffers;
 
     public:
-        explicit AudioBufferDeinterleaved(int channel_count = -1, int capacity = 0, int sample_size = -1)
-                : AudioBufferDeinterleavedInterface<T>(channel_count, capacity, sample_size) {
+        explicit AudioBufferDeinterleaved(int channel_count = -1, int capacity = 0)
+                : AudioBufferDeinterleavedInterface<T>(channel_count, capacity) {
             int data_per_sample = this->getSampleSize() / sizeof(T);
             for (int i = 0; i < channel_count; ++i)
                 buffers.emplace_back(std::vector<T>((unsigned long) this->getSampleCount() * data_per_sample));

@@ -7,15 +7,21 @@
 #include <cstdint>
 #include <vector>
 
+extern "C" {
+#include <libavutil/samplefmt.h>
+}
+
 namespace litaudio { namespace structures {
     class AudioBufferInterface {
     protected:
         int channel_count, capacity;
+        AVSampleFormat format;
         int sample_size;
 
     public:
-        AudioBufferInterface(int channel_count, int capacity, int sample_size)
-                : channel_count(channel_count), capacity(capacity), sample_size(sample_size) {}
+        AudioBufferInterface(int channel_count, int capacity, AVSampleFormat format)
+                : channel_count(channel_count), capacity(capacity), format(format),
+                  sample_size(av_get_bytes_per_sample(format)) {}
 
         int getChannelCount() const {
             return channel_count;
@@ -25,8 +31,13 @@ namespace litaudio { namespace structures {
             return capacity;
         }
 
-        void setSampleSize(int sample_size) {
-            AudioBufferInterface::sample_size = sample_size;
+        void setFormat(AVSampleFormat format) {
+            AudioBufferInterface::format = format;
+            sample_size = av_get_bytes_per_sample(format);
+        }
+
+        AVSampleFormat getFormat() const {
+            return format;
         }
 
         int getSampleSize() const {

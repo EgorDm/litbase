@@ -5,7 +5,6 @@
 #pragma once
 
 #include <string>
-#include <libavutil/samplefmt.h>
 #include <structures/audio_container.h>
 #include <structures/pcm_container.h>
 #include "reading.h"
@@ -18,7 +17,7 @@ using namespace litaudiofile;
 namespace litaudiofile { namespace simplified {
     template <typename T>
     inline AudioContainer<AudioBufferDeinterleaved<T>> *read_audio(const std::string &path, const AVSampleFormat &format, int sample_rate = -1) {
-        auto ret = createAudioContainer<AudioBufferDeinterleaved<T>>(format);
+        auto ret = new AudioContainerDeinterleaved<T>(format);
         ret->sample_rate = sample_rate;
 
         auto reader = AudioReader(ret, path);

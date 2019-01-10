@@ -19,10 +19,10 @@ namespace litsignal { namespace structures {
 
     public:
         explicit AudioSignalBuffer(int channel_count, int capacity = -1)
-                : AudioBufferDeinterleavedInterface<T>(channel_count, capacity, sizeof(T)) {}
+                : AudioBufferDeinterleavedInterface<T>(channel_count, capacity) {}
 
         explicit AudioSignalBuffer(const arma::Mat<T> &data)
-                : AudioBufferDeinterleavedInterface<T>(data.n_cols, data.n_rows, sizeof(T)), buffers(data) {}
+                : AudioBufferDeinterleavedInterface<T>(data.n_cols, data.n_rows), buffers(data) {}
 
         T *getChannel(int channel) override {
             return buffers.colptr(channel);
@@ -61,32 +61,16 @@ namespace litsignal { namespace structures {
     private:
         using Parent = AudioContainer<AudioSignalBuffer<T>>;
     public:
-        explicit SignalContainer(AVSampleFormat format = AV_SAMPLE_FMT_NONE, int channel_count = -1,
-                                 int sample_rate = -1, int capacity = 0)
-                : Parent(new AudioSignalBuffer<T>(channel_count, capacity), format, sample_rate) {}
+        explicit SignalContainer(int channel_count = -1, int sample_rate = -1, int capacity = 0)
+                : Parent(new AudioSignalBuffer<T>(channel_count, capacity), sample_rate) {}
 
-        explicit SignalContainer(const arma::Mat<T> &data, AVSampleFormat format = AV_SAMPLE_FMT_NONE,
-                                 int sample_rate = -1)
-                : Parent(new AudioSignalBuffer<T>(data), format, sample_rate) {}
+        explicit SignalContainer(const arma::Mat<T> &data, int sample_rate = -1)
+                : Parent(new AudioSignalBuffer<T>(data), sample_rate) {}
     };
 
-    class SignalContainerDbl : public SignalContainer<double> {
-    public:
-        explicit SignalContainerDbl(int channel_count = -1, int sample_rate = -1, int capacity = 0)
-                : SignalContainer(AV_SAMPLE_FMT_DBLP, channel_count, sample_rate, capacity) {}
+    using SignalContainerDbl = SignalContainer<double>;
 
-        SignalContainerDbl(const arma::Mat<double> &data, int sample_rate = -1)
-                : SignalContainer(data, AV_SAMPLE_FMT_DBLP, sample_rate) {}
-    };
-
-    class SignalContainerFlt : public SignalContainer<float> {
-    public:
-        explicit SignalContainerFlt(int channel_count = -1, int sample_rate = -1, int capacity = 0)
-                : SignalContainer(AV_SAMPLE_FMT_FLTP, channel_count, sample_rate, capacity) {}
-
-        SignalContainerFlt(const arma::Mat<float> &data, int sample_rate = -1)
-                : SignalContainer(data, AV_SAMPLE_FMT_FLTP, sample_rate) {}
-    };
+    using SignalContainerFlt = SignalContainer<float>;
 }}
 
 

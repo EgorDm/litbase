@@ -10,7 +10,6 @@ namespace litaudio { namespace structures {
     class PCMAudio : public AudioContainer<AudioBufferDeinterleaved < float>> {
         public:
         explicit PCMAudio(int channel_count = -1, int sample_rate = -1, int capacity = 0)
-                : AudioContainer(new AudioBufferDeinterleaved<float>(channel_count, capacity), AV_SAMPLE_FMT_FLTP,
-                                 sample_rate) {}
+                : AudioContainer(new AudioBufferDeinterleaved<float>(channel_count, capacity), sample_rate) {}
     };
 }}

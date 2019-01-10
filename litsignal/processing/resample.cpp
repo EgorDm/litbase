@@ -22,8 +22,8 @@ bool SignalResampler::resample() {
         output->setSampleCount(ACI(input->getSampleCount() * (p / (float) q)));
 
         for (int c = 0; c < input->getChannelCount(); ++c) {
-            output->getBuffer()->getChannelContainer(c) =
-                    detail::resample(input->getBuffer()->getChannelContainer(c), p, q);
+            output->getTypedBuffer()->getChannelContainer(c) =
+                    detail::resample(input->getTypedBuffer()->getChannelContainer(c), p, q);
         }
     } catch (std::runtime_error e) {
         debug::log_error(SignalResampler_TAG, e.what());

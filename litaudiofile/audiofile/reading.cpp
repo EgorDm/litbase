@@ -76,16 +76,14 @@ bool AudioReader::open_file() {
 
     // Create the temporary audio container
     reading_planar = static_cast<bool>(av_sample_fmt_is_planar(tmp_format));
-
     if (reading_planar) {
-        tmp = createAudioContainer<AudioBufferDeinterleaved<uint8_t>>
-                (tmp_format, codec_context->channels, codec_context->sample_rate, 0);
+        tmp = new AudioContainerDeinterleaved<uint8_t>(codec_context->channels, codec_context->sample_rate);
         tmp_buffer_deinterleaved = dynamic_cast<AudioBufferDeinterleaved<uint8_t> *>(tmp->getBuffer());
     } else {
-        tmp = createAudioContainer<AudioBufferInterleaved<uint8_t>>
-                (tmp_format, codec_context->channels, codec_context->sample_rate, 0);
+        tmp = new AudioContainerInterleaved<uint8_t>(codec_context->channels, codec_context->sample_rate);
         tmp_buffer_interleaved = reinterpret_cast<AudioBufferInterleaved<uint8_t> *>(tmp->getBuffer());
     }
+    tmp->setFormat(tmp_format);
 
     if ((error = avcodec_open2(codec_context, codec, nullptr)) < 0) {
         ffmpeg_utils::log_error(AudioReader_TAG, "Couldn't open the context with the decoder.", error);

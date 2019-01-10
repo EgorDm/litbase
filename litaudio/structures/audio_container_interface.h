@@ -4,19 +4,15 @@
 
 #pragma once
 
-extern "C" {
-#include <libavutil/samplefmt.h>
-}
+
 
 namespace litaudio { namespace structures {
     class AudioContainerInterface {
     protected:
-        AVSampleFormat format;
         int sample_rate;
 
     public:
-        explicit AudioContainerInterface(AVSampleFormat format, int sample_rate)
-                : format(format), sample_rate(sample_rate) {}
+        explicit AudioContainerInterface(int sample_rate) : sample_rate(sample_rate) {}
 
         int getSampleRate() const {
             return sample_rate;
@@ -27,12 +23,11 @@ namespace litaudio { namespace structures {
         }
 
         AVSampleFormat getFormat() const {
-            return format;
+            return getBuffer()->getFormat();
         }
 
         void setFormat(AVSampleFormat format) {
-            AudioContainerInterface::format = format;
-            setSampleSize(av_get_bytes_per_sample(format));
+            getBuffer()->setFormat(format);
         }
 
         int getChannelCount() const {
@@ -49,10 +44,6 @@ namespace litaudio { namespace structures {
 
         void setSampleCount(int sample_count) {
             getModifiableBuffer()->setSampleCount(sample_count);
-        }
-
-        void setSampleSize(int sample_size) {
-            getBuffer()->setSampleSize(sample_size);
         }
 
         int getSampleSize() const {
@@ -72,8 +63,8 @@ namespace litaudio { namespace structures {
         }
 
         bool isSameFormat(const AudioContainerInterface *other) const {
-            return sample_rate == other->getSampleRate() && getChannelCount() == other->getChannelCount() &&
-                   format == other->getFormat();
+            return getSampleRate() == other->getSampleRate() && getChannelCount() == other->getChannelCount() &&
+                   getFormat() == other->getFormat();
         }
 
         virtual void copyFormat(const AudioContainerInterface *src) {

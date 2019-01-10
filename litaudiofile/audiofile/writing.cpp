@@ -30,10 +30,11 @@ bool AudioWriter::pick_sample_format() {
 
         // Do conversion first
         if (av_sample_fmt_is_planar(codec_context->sample_fmt)) {
-            tmp = createAudioContainer<AudioBufferDeinterleaved<uint8_t>> (codec_context->sample_fmt, src->getChannelCount());
+            tmp = new AudioContainerDeinterleaved<uint8_t> (src->getChannelCount());
         } else {
-            tmp = createAudioContainer<AudioBufferInterleaved<uint8_t>>(codec_context->sample_fmt, src->getChannelCount());
+            tmp = new AudioContainerInterleaved<uint8_t>(src->getChannelCount());
         }
+        tmp->setFormat(codec_context->sample_fmt);
         tmp->copyFormat(src);
         processing::AudioConverter converter(src, tmp);
 
