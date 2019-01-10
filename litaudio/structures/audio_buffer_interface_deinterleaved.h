@@ -9,26 +9,15 @@
 #include "audio_buffer_interface.h"
 
 namespace litaudio { namespace structures {
-    template<typename T>
-    class AudioBufferDeinterleavedInterface : public AudioBufferInterface {
+    class AudioBufferDeinterleavedBaseInterface : public AudioBufferInterface {
     public:
-        AudioBufferDeinterleavedInterface(int channel_count, int capacity)
-                : AudioBufferInterface(channel_count, capacity, utils::deduce_format<T>(true)) {}
-
-        const T *getChannel(int channel) const {
-            return const_cast<AudioBufferDeinterleavedInterface *>(this)->getChannel(channel);
-        }
-
-        virtual T *getChannel(int channel) = 0;
+        using AudioBufferInterface::AudioBufferInterface;
 
         const uint8_t *getChannelPtr(int channel) const {
-            return reinterpret_cast<const uint8_t *>(getChannel(channel));
+            return const_cast<AudioBufferDeinterleavedBaseInterface *>(this)->getChannelPtr(channel);
         }
 
-        uint8_t *getChannelPtr(int channel) {
-            return const_cast<uint8_t *>(static_cast<const AudioBufferDeinterleavedInterface *>(this)
-                    ->getChannelPtr(channel));
-        }
+        virtual uint8_t *getChannelPtr(int channel) = 0;
 
         std::vector<uint8_t *> getDataFull() override {
             std::vector<uint8_t *> ret;
@@ -43,13 +32,30 @@ namespace litaudio { namespace structures {
         }
 
         bool copyData(const AudioBufferInterface *srcr) override {
-            auto src = dynamic_cast<const AudioBufferDeinterleavedInterface<T> *>(srcr);
+            auto src = dynamic_cast<const AudioBufferDeinterleavedBaseInterface *>(srcr);
             if (src == nullptr) return false; // Different buffer types unsupported
             for (int c = 0; c < src->getChannelCount(); ++c) {
                 std::memcpy(this->getChannelPtr(c), src->getChannelPtr(c),
-                            static_cast<size_t>(this->getSampleCount() * getSampleSize()));
+                            (size_t) this->getSampleCount() * getSampleSize());
             }
             return true;
+        }
+    };
+
+    template<typename T>
+    class AudioBufferDeinterleavedInterface : public AudioBufferDeinterleavedBaseInterface {
+    public:
+        AudioBufferDeinterleavedInterface(int channel_count, int capacity)
+                : AudioBufferDeinterleavedBaseInterface(channel_count, capacity, utils::deduce_format<T>(true)) {}
+
+        const T *getChannel(int channel) const {
+            return const_cast<AudioBufferDeinterleavedInterface *>(this)->getChannel(channel);
+        }
+
+        virtual T *getChannel(int channel) = 0;
+
+        uint8_t *getChannelPtr(int channel) override {
+            return reinterpret_cast<uint8_t *>(getChannel(channel));
         }
     };
 
@@ -73,7 +79,7 @@ namespace litaudio { namespace structures {
 
         void reset() override {
             for (int i = 0; i < this->getChannelCount(); ++i)
-                std::memset(this->getChannel(i), 0, (size_t)(this->getSampleCount() * this->getSampleSize()));
+                std::memset(this->getChannel(i), 0, (size_t) (this->getSampleCount() * this->getSampleSize()));
         }
 
         void clear() override {

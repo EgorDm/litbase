@@ -15,8 +15,9 @@ AudioConverter::~AudioConverter() {
 bool AudioConverter::convert() {
     // Check if format is already correct. Then just copy the data
     if(dst->isSameFormat(src)) {
-        dst->getBuffer()->copyData(src->getBuffer());
-        return true;
+        if(!dst->getModifiableBuffer()) return false;
+        dst->getModifiableBuffer()->setSampleCount(src->getSampleCount());
+        return dst->getBuffer()->copyData(src->getBuffer());
     }
 
     // Create context

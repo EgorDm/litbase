@@ -8,24 +8,14 @@
 #include "audio_buffer_interface.h"
 
 namespace litaudio { namespace structures {
-    template<typename T>
-    class AudioBufferInterleavedInterface : public AudioBufferInterface {
+    class AudioBufferInterleavedBaseInterface : public AudioBufferInterface {
     public:
-        AudioBufferInterleavedInterface(int channel_count, int capacity)
-                : AudioBufferInterface(channel_count, capacity, utils::deduce_format<T>(false)) {}
+        using AudioBufferInterface::AudioBufferInterface;
 
-        const T *getData() const {
-            return const_cast<AudioBufferInterleavedInterface *>(this)->getData();
-        }
-
-        virtual T *getData() = 0;
+        virtual uint8_t *getDataPtr() = 0;
 
         const uint8_t *getDataPtr() const {
-            return const_cast<AudioBufferInterleavedInterface *>(this)->getDataPtr();
-        }
-
-        uint8_t *getDataPtr() {
-            return reinterpret_cast<uint8_t *>(getData());
+            return const_cast<AudioBufferInterleavedBaseInterface *>(this)->getDataPtr();
         }
 
         std::vector<uint8_t *> getDataFull() override {
@@ -37,11 +27,28 @@ namespace litaudio { namespace structures {
         }
 
         bool copyData(const AudioBufferInterface *srcr) override {
-            auto src = dynamic_cast<const AudioBufferInterleavedInterface<T>*>(srcr);
-            if(src == nullptr) return false; // Different buffer types unsupported
-            memcpy (this->getData(), src->getData(),
-                    static_cast<size_t>(this->getSampleCount() * getChannelCount() * getSampleSize()));
+            auto src = dynamic_cast<const AudioBufferInterleavedBaseInterface *>(srcr);
+            if (src == nullptr) return false; // Different buffer types unsupported
+            memcpy(this->getDataPtr(), src->getDataPtr(),
+                   (size_t) this->getSampleCount() * getChannelCount() * getSampleSize());
             return true;
+        }
+    };
+
+    template<typename T>
+    class AudioBufferInterleavedInterface : public AudioBufferInterleavedBaseInterface {
+    public:
+        AudioBufferInterleavedInterface(int channel_count, int capacity)
+                : AudioBufferInterleavedBaseInterface(channel_count, capacity, utils::deduce_format<T>(false)) {}
+
+        const T *getData() const {
+            return const_cast<AudioBufferInterleavedInterface *>(this)->getData();
+        }
+
+        virtual T *getData() = 0;
+
+        uint8_t *getDataPtr() override {
+            return reinterpret_cast<uint8_t *>(getData());
         }
     };
 
