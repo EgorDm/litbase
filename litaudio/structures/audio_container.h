@@ -29,6 +29,10 @@ namespace litaudio {
                 return buffer;
             }
 
+            const B *getTypedBuffer() const {
+                return buffer;
+            }
+
             AudioBufferInterface *getBuffer() override {
                 return buffer;
             }
@@ -50,7 +54,13 @@ namespace litaudio {
         };
 
         template<typename T>
+        using AudioContainerInterleavedType = AudioContainer<AudioBufferInterleaved<T>>;
+
+        template<typename T>
         using AudioContainerInterleaved = AudioContainerSimple<AudioBufferInterleaved<T>>;
+
+        template<typename T>
+        using AudioContainerDeinterleavedType = AudioContainer<AudioBufferDeinterleaved<T>>;
 
         template<typename T>
         using AudioContainerDeinterleaved = AudioContainerSimple<AudioBufferDeinterleaved<T>>;

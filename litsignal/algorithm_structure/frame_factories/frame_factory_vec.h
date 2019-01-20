@@ -27,7 +27,7 @@ namespace litsignal { namespace algorithm {
             return frame_size;
         }
 
-        void setFrameSize(int frame_size) {
+        virtual void setFrameSize(int frame_size) {
             FrameHopInterface::frame_size = frame_size;
             FrameHopInterface::frame_half_size = frame_size / 2;
         }
