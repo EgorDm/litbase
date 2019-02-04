@@ -79,8 +79,13 @@ namespace litsignal { namespace analysis {
     cx_mat calculate_stft(const vec &input, int &feature_rate, vec &t, vec &f, int sr, const vec &window, int hop_size,
                           const span &coefficient_range = span(0, 0), bool mirror = false) {
         STFTPipeline pipeline = build_stft_algorithm(input, window, hop_size, coefficient_range, mirror);
-        AlgorithmSimpleRunner<STFTPipeline> runner;
+        AlgorithmSimpleRunner<STFTPipeline> runner; // TODO: Support multithread.
         runner.run(&pipeline);
+
+        feature_rate = STFTAlgorithm::getFeatureRate(sr, hop_size);
+        t = STFTAlgorithm::getTimeVec(sr, hop_size, pipeline.getFrameFactory()->getFrameCount());
+        f = STFTAlgorithm::getFreqVec(sr, ACI(window.n_elem), coefficient_range);
+
         return pipeline.getOutputBuilder()->getOutput();
     }
 }}

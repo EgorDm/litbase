@@ -91,12 +91,12 @@ namespace litsignal { namespace algorithm {
     public:
         using FrameFactoryType = FrameFactoryInterface<F>;
         using OutputBuilderType = AlgorithmOutputBuilder<O, OF>;
-        using AlgorithmType = AlgorithmInterface<F, C>;
+        using AlgorithmType = A;
 
     protected:
         FrameFactoryType *frame_factory = nullptr;
         OutputBuilderType *output_builder = nullptr;
-        A algorithm;
+        AlgorithmType algorithm;
 
     public:
         AlgorithmPipeline(FrameFactoryType *frame_factory, OutputBuilderType *output_builder, A algorithm)
