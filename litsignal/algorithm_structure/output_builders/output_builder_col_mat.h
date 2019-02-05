@@ -21,7 +21,7 @@ namespace litsignal { namespace algorithm {
         explicit OutputBuilderColMat(int frame_size) : ParentType(arma::Mat<T>()), frame_size(frame_size) {}
 
         void fill(AlgorithmContext<arma::Col<T>> *context, int i) override {
-            ParentType::output(arma::span::all, ParentType::cursor++) = context->getOutput();
+            ParentType::output(arma::span::all, i) = context->getOutput();
         }
 
         void resize(int capacity) override {

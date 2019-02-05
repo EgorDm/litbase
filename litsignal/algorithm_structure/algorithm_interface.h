@@ -89,9 +89,11 @@ namespace litsignal { namespace algorithm {
     template<typename F, typename OF, typename O, typename C, typename A>
     class AlgorithmPipeline {
     public:
+        using FrameType = F;
+        using ContextType = C;
+        using AlgorithmType = A;
         using FrameFactoryType = FrameFactoryInterface<F>;
         using OutputBuilderType = AlgorithmOutputBuilder<O, OF>;
-        using AlgorithmType = A;
 
     protected:
         FrameFactoryType *frame_factory = nullptr;
