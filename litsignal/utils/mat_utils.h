@@ -21,5 +21,7 @@ namespace litsignal { namespace mat_utils {
      */
     mat pad_mat(const mat &data, unsigned int n_before, unsigned int n_after, bool repeat = true);
 
+    vec pad_vec(const vec &x, unsigned int n_before, unsigned int n_after);
+
     vec smooth_filter_subtract(const vec &novelty_curve, float smooth_length, int feature_rate);
 }}

@@ -37,6 +37,12 @@ mat mat_utils::pad_mat(const mat &data, unsigned int n_before, unsigned int n_af
     return ret;
 }
 
+vec mat_utils::pad_vec(const vec &x, unsigned int n_before, unsigned int n_after) {
+    vec ret(x.size() + n_before + n_after, fill::zeros);
+    ret(span((uword)n_before, n_before + x.size() - 1)) = x;
+    return ret;
+}
+
 vec mat_utils::smooth_filter_subtract(const vec &novelty_curve, float smooth_length, int feature_rate) {
     vec smooth_filter = window::hanning(smooth_length * feature_rate);
     vec local_average = conv2(novelty_curve, smooth_filter / sum(smooth_filter), "same");
