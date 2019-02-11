@@ -48,3 +48,23 @@ vec mat_utils::smooth_filter_subtract(const vec &novelty_curve, float smooth_len
     vec local_average = conv2(novelty_curve, smooth_filter / sum(smooth_filter), "same");
     return clamp(novelty_curve - local_average, 0, std::numeric_limits<double>::max());
 }
+
+cx_mat mat_utils::colwise_normalize_p1(const cx_mat &feature, unsigned int p, double threshold) {
+    cx_mat ret(feature.n_rows, feature.n_cols, fill::zeros);
+
+    // normalise the vectors according to the l^p norm
+    cx_mat unit_vec(feature.n_rows, 1);
+    unit_vec.ones();
+    unit_vec = unit_vec / norm(unit_vec, p);
+
+#pragma omp parallel for
+    for (int k = 0; k < feature.n_cols; ++k) {
+        double n = norm(feature(span::all, (const uword) k), p);
+
+        if (n < threshold) ret(span::all, (const uword) k) = unit_vec;
+        else ret(span::all, (const uword) k) = feature(span::all, (const uword) k) / n;
+    }
+
+    return ret;
+}
+
